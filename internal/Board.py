@@ -3,7 +3,6 @@ from internal.Color import Color
 from internal.Piece import Piece
 from internal.Position import Position
 from internal.Square import Square
-from internal.Move import Move
 
 
 class Board:
@@ -41,21 +40,29 @@ class Board:
     def current_square(self, piece):
         return self.position.pieces_positions[piece]
 
-    def is_move_legal(self, piece, square):
+    def is_move_legal(self, move):
         # TODO Implement rules of chess related to piece move
-        return square.is_free()
+        piece = move.piece
+        destination_square = move.square
+        if not destination_square.is_free():
+            return False
+        controlled_squares = list(
+            map(lambda coordinates: self.squares[coordinates], self.position.controlled_squares(piece))
+        )
+        return destination_square in controlled_squares
 
-    def request_move(self, piece, square):
-        is_legal = self.is_move_legal(piece, square)
+    def request_move(self, move):
+        is_legal = self.is_move_legal(move)
         if is_legal:
-            self.apply_move(Move(piece, square))
+            self.apply_move(move)
         return is_legal
 
     def apply_move(self, move):
-        self.move_piece(move.piece)
+        self.leave_square(move.piece)
         self.put_piece_on_square(move.piece, move.square.rank, move.square.file)
+        move.piece.never_moved = False
 
-    def move_piece(self, piece):
+    def leave_square(self, piece):
         current_square = self.position.pieces_positions[piece]
         current_square.empty_content()
 

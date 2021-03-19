@@ -2,6 +2,7 @@ from gui.SquareGUI import SquareGUI
 from gui.PieceGUI import PieceGUI
 from gui.util import *
 from pygame import sprite
+from internal.Move import Move
 
 
 class BoardGUI:
@@ -59,4 +60,4 @@ class BoardGUI:
         return self.square_sprites[(square.rank, square.file)]
 
     def request_move(self, piece_sprite, square_sprite):
-        return self.board.request_move(piece_sprite.piece, square_sprite.square)
+        return self.board.request_move(Move(piece_sprite.piece, square_sprite.square))
