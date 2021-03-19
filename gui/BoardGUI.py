@@ -34,6 +34,7 @@ class BoardGUI:
         self.piece_group.draw(screen)
 
     def draw_board(self, screen):
+        # Draw squares before pieces
         self.square_group.draw(screen)
         self.piece_group.draw(screen)
 

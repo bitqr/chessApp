@@ -11,9 +11,6 @@ class PieceGUI(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect = self.rect.move(location_square.file * piece_size, location_square.rank * piece_size)
 
-    def draw(self, screen):
-        screen.blit(self.image, self.rect)
-
     def move_relative(self, vector):
         self.rect.x += vector[0]
         self.rect.y += vector[1]
