@@ -41,15 +41,15 @@ class Board:
         return self.position.pieces_positions[piece]
 
     def is_move_legal(self, move):
-        # TODO Implement rules of chess related to piece move
         piece = move.piece
         destination_square = move.square
         if not destination_square.is_free():
             return False
-        controlled_squares = list(
-            map(lambda coordinates: self.squares[coordinates], self.position.controlled_squares(piece))
+        square_coordinates = self.position.moving_squares(piece, self.squares)
+        moving_squares = list(
+            map(lambda coordinates: self.squares[coordinates], square_coordinates)
         )
-        return destination_square in controlled_squares
+        return destination_square in moving_squares
 
     def request_move(self, move):
         is_legal = self.is_move_legal(move)
