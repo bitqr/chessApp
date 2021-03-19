@@ -1,19 +1,26 @@
 from internal.PieceType import PieceType
-from internal.PieceColor import PieceColor
+from internal.Color import Color
 
 
 def piece_to_sprite():
     result = dict()
-    result[(PieceType.PAWN, PieceColor.WHITE)] = "whitePawn"
-    result[(PieceType.KNIGHT, PieceColor.WHITE)] = "whiteKnight"
-    result[(PieceType.BISHOP, PieceColor.WHITE)] = "whiteBishop"
-    result[(PieceType.ROOK, PieceColor.WHITE)] = "whiteRook"
-    result[(PieceType.QUEEN, PieceColor.WHITE)] = "whiteQueen"
-    result[(PieceType.KING, PieceColor.WHITE)] = "whiteKing"
-    result[(PieceType.PAWN, PieceColor.BLACK)] = "blackPawn"
-    result[(PieceType.KNIGHT, PieceColor.BLACK)] = "blackKnight"
-    result[(PieceType.BISHOP, PieceColor.BLACK)] = "blackBishop"
-    result[(PieceType.ROOK, PieceColor.BLACK)] = "blackRook"
-    result[(PieceType.QUEEN, PieceColor.BLACK)] = "blackQueen"
-    result[(PieceType.KING, PieceColor.BLACK)] = "blackKing"
+    result[(PieceType.PAWN, Color.WHITE)] = "whitePawn"
+    result[(PieceType.KNIGHT, Color.WHITE)] = "whiteKnight"
+    result[(PieceType.BISHOP, Color.WHITE)] = "whiteBishop"
+    result[(PieceType.ROOK, Color.WHITE)] = "whiteRook"
+    result[(PieceType.QUEEN, Color.WHITE)] = "whiteQueen"
+    result[(PieceType.KING, Color.WHITE)] = "whiteKing"
+    result[(PieceType.PAWN, Color.BLACK)] = "blackPawn"
+    result[(PieceType.KNIGHT, Color.BLACK)] = "blackKnight"
+    result[(PieceType.BISHOP, Color.BLACK)] = "blackBishop"
+    result[(PieceType.ROOK, Color.BLACK)] = "blackRook"
+    result[(PieceType.QUEEN, Color.BLACK)] = "blackQueen"
+    result[(PieceType.KING, Color.BLACK)] = "blackKing"
+    return result
+
+
+def square_to_sprite():
+    result = dict()
+    result[Color.WHITE] = "whiteSquare"
+    result[Color.BLACK] = "blackSquare"
     return result

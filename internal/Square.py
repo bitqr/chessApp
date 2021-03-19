@@ -1,5 +1,6 @@
 from internal.Piece import Piece
 from internal.PieceType import PieceType
+from internal.Color import Color
 
 
 class Square:
@@ -14,3 +15,9 @@ class Square:
 
     def is_free(self):
         return self.content.type == PieceType.NONE
+
+    def get_color(self):
+        return Color.WHITE if (self.rank + self.file) % 2 == 0 else Color.BLACK
+
+    def to_string(self):
+        return f'({self.rank}, {self.file}) --> {self.content.to_string()}'
