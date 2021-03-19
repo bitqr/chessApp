@@ -18,17 +18,22 @@ def run_app(window):
                     if piece_sprite.rect.collidepoint(event.pos):
                         # Drag and drop can start here
                         selected_piece_sprite = piece_sprite
+                        break
             elif event.type == pygame.MOUSEMOTION:
                 if selected_piece_sprite:
                     # A piece is being dragged
+                    window.dragging_group.add(selected_piece_sprite)
                     selected_piece_sprite.move_relative(event.rel)
             elif event.type == pygame.MOUSEBUTTONUP:
                 if selected_piece_sprite:
                     # A piece is being released, either on a square or somewhere else
                     for square_sprite in window.square_sprites.values():
                         if square_sprite.rect.collidepoint(event.pos):
-                            selected_piece_sprite.move_to_square(square_sprite)
+                            window.request_move(selected_piece_sprite, square_sprite)
+                            selected_piece_sprite.move_to_square(window.current_square_sprite(selected_piece_sprite))
+                            window.dragging_group.remove(selected_piece_sprite)
                             selected_piece_sprite = None
+                            break
         pygame.display.flip()
         window.draw_board(screen)
     pygame.quit()

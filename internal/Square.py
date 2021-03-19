@@ -19,5 +19,8 @@ class Square:
     def get_color(self):
         return Color.WHITE if (self.rank + self.file) % 2 == 0 else Color.BLACK
 
+    def empty_content(self):
+        self.content = Piece(PieceType.NONE)
+
     def to_string(self):
         return f'({self.rank}, {self.file}) --> {self.content.to_string()}'
