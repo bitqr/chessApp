@@ -41,20 +41,6 @@ class Board:
     def current_square(self, piece):
         return self.position.pieces_positions[piece]
 
-    def is_move_legal(self, move):
-        piece = move.piece
-        destination_square = move.square
-        return (destination_square.rank, destination_square.file) in self.position.legal_moves[piece]
-
-    # This method will tell in its return boolean value whether the move is legal AND a capture
-    def request_move(self, move):
-        is_legal = self.is_move_legal(move)
-        is_capture = move.is_capture()
-        if is_legal:
-            self.apply_move(move)
-            return is_capture
-        return False
-
     def apply_move(self, move):
         self.leave_square(move.piece)
         # If the move is a capture, remove the piece on the destination square
