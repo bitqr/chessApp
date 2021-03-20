@@ -19,6 +19,7 @@ class Board:
     def initialize_board(self):
         self.initialize_side(Color.WHITE)
         self.initialize_side(Color.BLACK)
+        self.position.update_legal_moves(self.squares)
 
     def initialize_side(self, piece_color):
         base_rank = 0
@@ -43,19 +44,7 @@ class Board:
     def is_move_legal(self, move):
         piece = move.piece
         destination_square = move.square
-        if not destination_square.is_free():
-            if destination_square.content.color != piece.color:
-                square_coordinates = self.position.capturing_squares(piece, self.squares)
-                capturing_squares = list(
-                    map(lambda coordinates: self.squares[coordinates], square_coordinates)
-                )
-                return destination_square in capturing_squares
-            return False
-        square_coordinates = self.position.moving_squares(piece, self.squares)
-        moving_squares = list(
-            map(lambda coordinates: self.squares[coordinates], square_coordinates)
-        )
-        return destination_square in moving_squares
+        return (destination_square.rank, destination_square.file) in self.position.legal_moves[piece]
 
     # This method will tell in its return boolean value whether the move is legal AND a capture
     def request_move(self, move):
@@ -73,6 +62,7 @@ class Board:
             self.position.pieces_positions.pop(move.square.content)
         self.put_piece_on_square(move.piece, move.square.rank, move.square.file)
         move.piece.never_moved = False
+        self.position.update_legal_moves(self.squares)
 
     def leave_square(self, piece):
         current_square = self.position.pieces_positions[piece]
