@@ -56,18 +56,3 @@ if __name__ == '__main__':
     chessboard.initialize_board(board, screen)
 
     run_app(chessboard)
-
-
-# -> Next Objectives:
-
-# - Computation of legal moves based on chess rules
-#   - Castle
-#   - En-Passant
-#   - FEN-notation reading
-#   - Pins (pieces that are pinned cannot move)
-#   - More generally, prevent all moves putting the king in check
-#       (pins, but also moving the king to a controlled square)
-
-# - GUI: Click & Click for moving pieces, with possible squares highlighted
-
-# - Start playing a game
