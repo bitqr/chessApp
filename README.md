@@ -4,8 +4,8 @@ Chess Application
 Will contain:
 
 - A chess app, with a GUI of the board
-- A chess engine, for some chess challenge
-- Many more...
+- A chess engine, for somme chess challenge
+- And many more...
 
 # Next Objectives:
 
