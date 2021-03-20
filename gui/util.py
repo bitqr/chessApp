@@ -43,8 +43,9 @@ def un_highlight_target_squares(square_sprites):
 
 
 def perform_move_on_board(window, selected_piece_sprite, square_sprite, event_position):
-    is_capture = not square_sprite.is_free()
-    window.board.apply_move(Move(selected_piece_sprite.piece, square_sprite.square))
+    move = Move(selected_piece_sprite.piece, square_sprite.square)
+    is_capture = move.is_capture()
+    window.board.apply_move(move)
     if is_capture:
         # Look for the captured piece sprite and delete it
         for piece_sprite in window.piece_group.sprites():
@@ -52,6 +53,11 @@ def perform_move_on_board(window, selected_piece_sprite, square_sprite, event_po
                     and piece_sprite.rect.collidepoint(event_position):
                 window.piece_group.remove(piece_sprite)
                 break
+    if move.is_castle:
+        rook = window.board.squares[(move.square.rank, 5)].content if move.square.file == 6 \
+            else window.board.squares[(move.square.rank, 3)].content
+        rook_sprite = window.piece_sprites[rook]
+        rook_sprite.move_to_square(window.current_square_sprite(rook_sprite))
     end_drag_and_drop_move(window, selected_piece_sprite)
 
 

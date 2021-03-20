@@ -6,13 +6,13 @@ class SquareGUI(pygame.sprite.Sprite):
     def __init__(self, square, square_size, image):
         super().__init__()
         self.square = square
-        self.highlighted_image = pygame.Surface((square_size, square_size))
-        self.highlighted_image.fill(pygame.Color("red"))
-        self.image = pygame.image.load(image).convert()
-        self.image = pygame.transform.scale(self.image, [square_size, square_size])
-        self.normal_image = self.image
-        self.rect = self.image.get_rect()
+        self.normal_image = pygame.image.load(image).convert()
+        self.normal_image = pygame.transform.scale(self.normal_image, [square_size, square_size])
+        self.rect = self.normal_image.get_rect()
         self.rect = self.rect.move(square.file * square_size, square.rank * square_size)
+        self.highlighted_image = pygame.image.load(image).convert_alpha()
+        self.image = self.normal_image
+        self.alpha = self.image.get_alpha()
 
     def highlight(self):
         self.image = self.highlighted_image

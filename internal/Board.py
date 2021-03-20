@@ -3,6 +3,7 @@ from internal.Color import Color
 from internal.Piece import Piece
 from internal.Position import Position
 from internal.Square import Square
+from internal.util import compute_castling_rook_move
 
 
 class Board:
@@ -47,6 +48,11 @@ class Board:
         if move.is_capture():
             self.position.pieces_positions.pop(move.square.content)
         self.put_piece_on_square(move.piece, move.square.rank, move.square.file)
+        if move.is_castle:
+            rook_move = compute_castling_rook_move(move, self.squares)
+            self.leave_square(rook_move.piece)
+            self.put_piece_on_square(rook_move.piece, rook_move.square.rank, rook_move.square.file)
+            rook_move.piece.never_moved = False
         move.piece.never_moved = False
         self.position.update_legal_moves(self.squares)
 

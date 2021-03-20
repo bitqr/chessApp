@@ -12,6 +12,7 @@ class BoardGUI:
         self.square_to_sprite = square_to_sprite()
         self.piece_to_sprite = piece_to_sprite()
         self.square_sprites = dict()
+        self.piece_sprites = dict()
         self.square_group = sprite.Group()
         self.piece_group = sprite.Group()
         self.dragging_group = sprite.Group()
@@ -28,6 +29,7 @@ class BoardGUI:
                 if not square.is_free():
                     piece = square.content
                     piece_sprite = self.create_piece(piece, board.position.pieces_positions[piece])
+                    self.piece_sprites[piece] = piece_sprite
                     self.piece_group.add(piece_sprite)
         self.draw_board(screen)
 
