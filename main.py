@@ -14,7 +14,7 @@ def run_app(window):
                 run = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 # User clicked on something
-                for piece_sprite in window.piece_sprites.values():
+                for piece_sprite in window.piece_group.sprites():
                     if piece_sprite.rect.collidepoint(event.pos):
                         # Drag and drop can start here
                         selected_piece_sprite = piece_sprite
@@ -27,9 +27,16 @@ def run_app(window):
             elif event.type == pygame.MOUSEBUTTONUP:
                 if selected_piece_sprite:
                     # A piece is being released, either on a square or somewhere else
-                    for square_sprite in window.square_sprites.values():
+                    for square_sprite in window.square_group.sprites():
                         if square_sprite.rect.collidepoint(event.pos):
-                            window.request_move(selected_piece_sprite, square_sprite)
+                            is_capture = window.request_move(selected_piece_sprite, square_sprite)
+                            if is_capture:
+                                # Look for the captured piece sprite and delete it
+                                for piece_sprite in window.piece_group.sprites():
+                                    if piece_sprite != selected_piece_sprite \
+                                            and piece_sprite.rect.collidepoint(event.pos):
+                                        window.piece_group.remove(piece_sprite)
+                                        break
                             selected_piece_sprite.move_to_square(window.current_square_sprite(selected_piece_sprite))
                             window.dragging_group.remove(selected_piece_sprite)
                             selected_piece_sprite = None

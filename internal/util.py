@@ -38,7 +38,7 @@ def king_squares(square):
     return result
 
 
-def pawn_squares(piece, square):
+def pawn_moving_squares(piece, square):
     rank = square.rank + piece.opponent_direction()
     if is_out_of_range(rank):
         return []
@@ -48,55 +48,87 @@ def pawn_squares(piece, square):
     return result
 
 
-def bishop_squares(square, all_squares):
+def pawn_capturing_squares(piece, square):
+    rank = square.rank + piece.opponent_direction()
+    if is_out_of_range(rank):
+        return []
+    result = []
+    if not is_out_of_range(square.file - 1):
+        result = [(rank, square.file - 1)]
+    if not is_out_of_range(square.file + 1):
+        result.append((rank, square.file + 1))
+    return result
+
+
+def bishop_squares(piece, square, all_squares, capturing):
     result = []
     for delta in range(1, 8):
         coordinates = (square.rank + delta, square.file + delta)
         if is_out_of_board(coordinates[0], coordinates[1]) or not all_squares[coordinates].is_free():
+            if capturing and not is_out_of_board(coordinates[0], coordinates[1]) \
+                    and all_squares[coordinates].content.color != piece.color:
+                result.append(coordinates)
             break
         result.append(coordinates)
     for delta in range(1, 8):
         coordinates = (square.rank - delta, square.file - delta)
         if is_out_of_board(coordinates[0], coordinates[1]) or not all_squares[coordinates].is_free():
+            if capturing and not is_out_of_board(coordinates[0], coordinates[1]) \
+                    and all_squares[coordinates].content.color != piece.color:
+                result.append(coordinates)
             break
         result.append(coordinates)
     for delta in range(1, 8):
         coordinates = (square.rank - delta, square.file + delta)
         if is_out_of_board(coordinates[0], coordinates[1]) or not all_squares[coordinates].is_free():
+            if capturing and not is_out_of_board(coordinates[0], coordinates[1]) \
+                    and all_squares[coordinates].content.color != piece.color:
+                result.append(coordinates)
             break
         result.append(coordinates)
     for delta in range(1, 8):
         coordinates = (square.rank + delta, square.file - delta)
         if is_out_of_board(coordinates[0], coordinates[1]) or not all_squares[coordinates].is_free():
+            if capturing and not is_out_of_board(coordinates[0], coordinates[1]) \
+                    and all_squares[coordinates].content.color != piece.color:
+                result.append(coordinates)
             break
         result.append(coordinates)
     return result
 
 
-def rook_squares(square, all_squares):
+def rook_squares(piece, square, all_squares, capturing):
     result = []
     for rank in range(square.rank + 1, 8):
         if not all_squares[(rank, square.file)].is_free():
+            if capturing and all_squares[(rank, square.file)].content.color != piece.color:
+                result.append((rank, square.file))
             break
         result.append((rank, square.file))
     for rank in range(square.rank - 1, -1, -1):
         if not all_squares[(rank, square.file)].is_free():
+            if capturing and all_squares[(rank, square.file)].content.color != piece.color:
+                result.append((rank, square.file))
             break
         result.append((rank, square.file))
     for file in range(square.file + 1, 8):
         if not all_squares[(square.rank, file)].is_free():
+            if capturing and all_squares[(square.rank, file)].content.color != piece.color:
+                result.append((square.rank, file))
             break
         result.append((square.rank, file))
     for file in range(square.file - 1, -1, -1):
         if not all_squares[(square.rank, file)].is_free():
+            if capturing and all_squares[(square.rank, file)].content.color != piece.color:
+                result.append((square.rank, file))
             break
         result.append((square.rank, file))
     return result
 
 
-def queen_squares(square, all_squares):
-    result = rook_squares(square, all_squares)
-    result.extend(bishop_squares(square, all_squares))
+def queen_squares(piece, square, all_squares, capturing):
+    result = rook_squares(piece, square, all_squares, capturing)
+    result.extend(bishop_squares(piece, square, all_squares, capturing))
     return result
 
 

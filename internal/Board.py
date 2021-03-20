@@ -44,6 +44,12 @@ class Board:
         piece = move.piece
         destination_square = move.square
         if not destination_square.is_free():
+            if destination_square.content.color != piece.color:
+                square_coordinates = self.position.capturing_squares(piece, self.squares)
+                capturing_squares = list(
+                    map(lambda coordinates: self.squares[coordinates], square_coordinates)
+                )
+                return destination_square in capturing_squares
             return False
         square_coordinates = self.position.moving_squares(piece, self.squares)
         moving_squares = list(
@@ -51,14 +57,20 @@ class Board:
         )
         return destination_square in moving_squares
 
+    # This method will tell in its return boolean value whether the move is legal AND a capture
     def request_move(self, move):
         is_legal = self.is_move_legal(move)
+        is_capture = move.is_capture()
         if is_legal:
             self.apply_move(move)
-        return is_legal
+            return is_capture
+        return False
 
     def apply_move(self, move):
         self.leave_square(move.piece)
+        # If the move is a capture, remove the piece on the destination square
+        if move.is_capture():
+            self.position.pieces_positions.pop(move.square.content)
         self.put_piece_on_square(move.piece, move.square.rank, move.square.file)
         move.piece.never_moved = False
 
