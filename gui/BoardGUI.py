@@ -15,6 +15,7 @@ class BoardGUI:
         self.piece_sprites = dict()
         self.square_group = sprite.Group()
         self.piece_group = sprite.Group()
+        self.dragging_group = sprite.Group()
         self.board_width = board.size * square_size
         self.board_height = board.size * square_size
 
@@ -28,15 +29,15 @@ class BoardGUI:
                 if not square.is_free():
                     piece = square.content
                     piece_sprite = self.create_piece(piece, board.position.pieces_positions[piece])
-                    self.piece_sprites[(square.rank, square.file)] = piece_sprite
+                    self.piece_sprites[piece] = piece_sprite
                     self.piece_group.add(piece_sprite)
-        self.square_group.draw(screen)
-        self.piece_group.draw(screen)
+        self.draw_board(screen)
 
     def draw_board(self, screen):
         # Draw squares before pieces
         self.square_group.draw(screen)
         self.piece_group.draw(screen)
+        self.dragging_group.draw(screen)
 
     def create_square(self, square):
         return SquareGUI(
@@ -52,3 +53,7 @@ class BoardGUI:
             f'sprites/{self.piece_to_sprite[(piece.type, piece.color)]}.png',
             location_square
         )
+
+    def current_square_sprite(self, piece_sprite):
+        square = self.board.current_square(piece_sprite.piece)
+        return self.square_sprites[(square.rank, square.file)]
