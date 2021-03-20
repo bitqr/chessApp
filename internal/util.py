@@ -46,7 +46,7 @@ def pawn_squares(piece, square, all_squares):
     result = []
     if all_squares[(rank, square.file)].is_free():
         result.append((rank, square.file))
-    if piece.never_moved:
+    if piece.never_moved and all_squares[(rank + piece.opponent_direction(), square.file)].is_free():
         result.append((rank + piece.opponent_direction(), square.file))
     if not is_out_of_range(square.file - 1) and all_squares[(rank, square.file - 1)].contains_opponent_piece(piece):
         result.append((rank, square.file - 1))

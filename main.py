@@ -1,5 +1,6 @@
 from internal.Board import Board
 from gui.BoardGUI import BoardGUI
+import gui.util
 import pygame
 import sys
 
@@ -8,39 +9,41 @@ def run_app(window):
     pygame.display.init()
     run = True
     selected_piece_sprite = None
+    target_squares = []
+    held_button = False
+    drag_in_progress = False
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
+                held_button = True
                 # User clicked on something
-                for piece_sprite in window.piece_group.sprites():
-                    if piece_sprite.rect.collidepoint(event.pos):
-                        # Drag and drop can start here
-                        selected_piece_sprite = piece_sprite
-                        break
-            elif event.type == pygame.MOUSEMOTION:
                 if selected_piece_sprite:
+                    gui.util.un_highlight_target_squares(target_squares)
+                    # Click on potential target square
+                    for square_sprite in target_squares:
+                        if square_sprite.rect.collidepoint(event.pos):
+                            gui.util.perform_move_on_board(window, selected_piece_sprite, square_sprite, event.pos)
+                            break
+                    selected_piece_sprite = None
+                else:
+                    # 1st click for a move
+                    selected_piece_sprite, target_squares =\
+                        gui.util.select_piece_sprite_for_first_click_move(window, event.pos, selected_piece_sprite)
+            elif event.type == pygame.MOUSEMOTION:
+                if held_button and selected_piece_sprite:
+                    drag_in_progress = True
                     # A piece is being dragged
                     window.dragging_group.add(selected_piece_sprite)
                     selected_piece_sprite.move_relative(event.rel)
             elif event.type == pygame.MOUSEBUTTONUP:
-                if selected_piece_sprite:
-                    # A piece is being released, either on a square or somewhere else
-                    for square_sprite in window.square_group.sprites():
-                        if square_sprite.rect.collidepoint(event.pos):
-                            is_capture = window.request_move(selected_piece_sprite, square_sprite)
-                            if is_capture:
-                                # Look for the captured piece sprite and delete it
-                                for piece_sprite in window.piece_group.sprites():
-                                    if piece_sprite != selected_piece_sprite \
-                                            and piece_sprite.rect.collidepoint(event.pos):
-                                        window.piece_group.remove(piece_sprite)
-                                        break
-                            selected_piece_sprite.move_to_square(window.current_square_sprite(selected_piece_sprite))
-                            window.dragging_group.remove(selected_piece_sprite)
-                            selected_piece_sprite = None
-                            break
+                held_button = False
+                # A piece is being released OR has just been selected by a left click
+                if drag_in_progress:
+                    gui.util.release_piece_after_drag_and_drop(window, selected_piece_sprite, target_squares, event.pos)
+                    selected_piece_sprite = None
+                drag_in_progress = False
         pygame.display.flip()
         window.draw_board(screen)
     pygame.quit()
