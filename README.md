@@ -14,7 +14,7 @@ Will contain:
 
 - Introduce game ending notions
    - Checkmate (no legal move left, and the player's in check)
-   - Stalemate (no legal move left, and it's the player isn't in check)
+   - Stalemate (no legal move left, and the player isn't in check)
 
 - Advanced notions
    - Add the move: En-Passant

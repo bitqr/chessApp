@@ -1,9 +1,11 @@
 from internal import util
+from internal.Color import Color
 
 
 class Position:
 
     def __init__(self):
+        self.color_to_move = Color.WHITE
         self.pieces_positions = dict()
         self.legal_moves = dict()
         self.controlled_squares = dict()
@@ -36,6 +38,9 @@ class Position:
 
     def compute_legal_moves(self, piece, all_squares):
         self.legal_moves[piece] = []
+        # Pieces cannot be moved if it's not their turn
+        if not piece.color == self.color_to_move:
+            return self.legal_moves[piece]
         pseudo_legal_moves = self.compute_pseudo_legal_moves(piece, all_squares)
         for item in pseudo_legal_moves:
             original_controlled_squares = util.dict_copy(self.controlled_squares)
