@@ -69,8 +69,3 @@ class BoardGUI:
         checked_king_sprite = \
             self.piece_sprites[self.board.white_king if attacking_piece.is_black() else self.board.black_king]
         return self.current_square_sprite(checked_king_sprite)
-
-    def protected_king_sprite(self, protecting_piece):
-        checked_king_sprite = \
-            self.piece_sprites[self.board.white_king if protecting_piece.is_white() else self.board.black_king]
-        return self.current_square_sprite(checked_king_sprite)
