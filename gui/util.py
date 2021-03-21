@@ -30,10 +30,13 @@ def square_to_sprite():
 def highlight_target_squares(window, selected_piece_sprite):
     squares_coordinates = window.board.position.legal_moves[selected_piece_sprite.piece]
     result = []
+    square_sprite = window.current_square_sprite(selected_piece_sprite)
     for coordinates in squares_coordinates:
         sprite = window.square_sprites[coordinates]
         result.append(sprite)
         sprite.highlight()
+    if len(squares_coordinates) == 0:
+        square_sprite.signal_unmovable()
     return result
 
 
@@ -42,7 +45,16 @@ def un_highlight_target_squares(square_sprites):
         square_sprite.un_highlight()
 
 
+def cancel_highlighting_target_squares(square_sprites):
+    for square_sprite in square_sprites:
+        square_sprite.cancel_highlight()
+
+
 def perform_move_on_board(window, selected_piece_sprite, square_sprite, event_position):
+    # First, remove check highlighted square
+    if window.check_highlighted_square_sprite:
+        window.check_highlighted_square_sprite.un_highlight()
+        window.check_highlighted_square_sprite = None
     move = Move(selected_piece_sprite.piece, square_sprite.square)
     is_capture = move.is_capture()
     window.board.apply_move(move)
@@ -54,10 +66,16 @@ def perform_move_on_board(window, selected_piece_sprite, square_sprite, event_po
                 window.piece_group.remove(piece_sprite)
                 break
     if move.is_castle:
+        # Also move the additional rook on the board
         rook = window.board.squares[(move.square.rank, 5)].content if move.square.file == 6 \
             else window.board.squares[(move.square.rank, 3)].content
         rook_sprite = window.piece_sprites[rook]
         rook_sprite.move_to_square(window.current_square_sprite(rook_sprite))
+    checked_king_current_square_sprite = window.attacked_king_sprite(move.piece)
+    if move.is_check:
+        # Highlight opponent king
+        checked_king_current_square_sprite.signal_check()
+        window.check_highlighted_square_sprite = checked_king_current_square_sprite
     end_drag_and_drop_move(window, selected_piece_sprite)
 
 
@@ -75,7 +93,9 @@ def release_piece_after_drag_and_drop(window, selected_piece_sprite, target_squa
             break
     if not found_square:
         end_drag_and_drop_move(window, selected_piece_sprite)
-    un_highlight_target_squares(target_squares)
+        cancel_highlighting_target_squares(target_squares)
+    else:
+        un_highlight_target_squares(target_squares)
 
 
 def select_piece_sprite_for_first_click_move(window, event_position, selected_piece_sprite):
@@ -83,7 +103,6 @@ def select_piece_sprite_for_first_click_move(window, event_position, selected_pi
         if piece_sprite.rect.collidepoint(event_position):
             # Drag and drop can start here only if there are target squares
             target_squares = highlight_target_squares(window, piece_sprite)
-            if len(target_squares) > 0:
-                selected_piece_sprite = piece_sprite
+            selected_piece_sprite = piece_sprite
             return selected_piece_sprite, target_squares
     return selected_piece_sprite, []

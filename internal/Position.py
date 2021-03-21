@@ -38,7 +38,7 @@ class Position:
         self.legal_moves[piece] = []
         pseudo_legal_moves = self.compute_pseudo_legal_moves(piece, all_squares)
         for item in pseudo_legal_moves:
-            original_controlled_squares = dict(self.controlled_squares)
+            original_controlled_squares = util.dict_copy(self.controlled_squares)
             # Make the temporary move
             # Free the origin square
             square = self.pieces_positions[piece]
@@ -98,10 +98,9 @@ class Position:
         self.pieces_positions[piece] = square
 
     def is_controlled(self, rank, file, color):
-        if color in self.controlled_squares.keys():
-            for piece in self.controlled_squares[color].keys():
-                if (rank, file) in self.controlled_squares[color][piece]:
-                    return True
+        for piece in self.controlled_squares[color].keys():
+            if (rank, file) in self.controlled_squares[color][piece]:
+                return True
         return False
 
     def add_captured_piece(self, piece):

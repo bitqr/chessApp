@@ -2,6 +2,8 @@ from internal.Color import Color
 from internal.Move import Move
 from internal.PieceType import PieceType
 
+KING_FILE = 4
+
 
 def piece_color_to_string(piece_color):
     return 'White' if piece_color == Color.WHITE else 'Black'
@@ -47,6 +49,7 @@ def king_squares(king, square, all_squares, position):
                 result.append((rank, file))
     # Look for king-side castle
     if king.never_moved \
+            and square.file == KING_FILE \
             and all_squares[(square.rank, square.file + 1)].is_free() \
             and not position.is_controlled(square.rank, square.file + 1, king.opposite_color()) \
             and all_squares[(square.rank, square.file + 2)].is_free() \
@@ -274,4 +277,13 @@ def knight_controlled_squares(square):
         result.append((square.rank + 1, square.file + 2))
     if not is_out_of_board(square.rank + 1, square.file - 2):
         result.append((square.rank + 1, square.file - 2))
+    return result
+
+
+def dict_copy(target):
+    result = dict()
+    for color_key in target.keys():
+        result[color_key] = dict()
+        for piece_key in target[color_key].keys():
+            result[color_key][piece_key] = target[color_key][piece_key]
     return result

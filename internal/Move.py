@@ -17,6 +17,7 @@ class Move:
         self.piece = piece
         self.square = square
         self.is_castle = self.is_castle()
+        self.is_check = False
 
     def is_capture(self):
         return not self.square.is_free()

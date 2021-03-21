@@ -59,6 +59,15 @@ class Board:
         move.piece.never_moved = False
         self.position.update_controlled_squares(self.squares)
         self.position.update_legal_moves(self.squares)
+        self.determine_check_situation(move)
+
+    def determine_check_situation(self, move):
+        if move.piece.is_white():
+            if self.position.is_in_check(self.black_king):
+                move.is_check = True
+        else:
+            if self.position.is_in_check(self.white_king):
+                move.is_check = True
 
     def leave_square(self, piece):
         current_square = self.position.pieces_positions[piece]

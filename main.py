@@ -20,12 +20,13 @@ def run_app(window):
                 held_button = True
                 # User clicked on something
                 if selected_piece_sprite:
-                    gui.util.un_highlight_target_squares(target_squares)
-                    # Click on potential target square
+                    gui.util.cancel_highlighting_target_squares(target_squares)
+                    # Clicked on potential target square
                     for square_sprite in target_squares:
                         if square_sprite.rect.collidepoint(event.pos):
                             gui.util.perform_move_on_board(window, selected_piece_sprite, square_sprite, event.pos)
                             break
+                    window.current_square_sprite(selected_piece_sprite).cancel_highlight()
                     selected_piece_sprite = None
                 else:
                     # 1st click for a move
