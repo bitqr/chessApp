@@ -43,8 +43,7 @@ def king_squares(king, square, all_squares, position):
     result = []
     for rank in range(max(0, square.rank - 1), min(7, square.rank + 1) + 1):
         for file in range(max(0, square.file - 1), min(7, square.file + 1) + 1):
-            if not all_squares[(rank, file)].contains_friendly_piece(king) \
-                    and not position.is_controlled(rank, file, king.opposite_color()):
+            if not all_squares[(rank, file)].contains_friendly_piece(king):
                 result.append((rank, file))
     # Look for king-side castle
     if king.never_moved \

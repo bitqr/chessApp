@@ -10,14 +10,10 @@ Will contain:
 # Next Objectives:
 
 - Refinement of the Computation of legal moves based on chess rules
-    - Add the notion of Check
-    - Add controlled squares for each color
-    - Add the move: Castle
+    - Add the notion of Check --> display
 
 - Start playing a game
-   - Notion of a Game
-   - Notion of a Player
-   - Turns
+   - Notion of a Game, Player, and Turns
 
 - Introduce game ending notions
    - Checkmate (no legal move left, and the player's in check)
