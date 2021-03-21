@@ -18,6 +18,7 @@ class BoardGUI:
         self.dragging_group = sprite.Group()
         self.board_width = board.size * square_size
         self.board_height = board.size * square_size
+        self.check_highlighted_square_sprite = None
 
     def initialize_board(self, board, screen):
         for rank in range(board.size):
@@ -57,3 +58,14 @@ class BoardGUI:
     def current_square_sprite(self, piece_sprite):
         square = self.board.current_square(piece_sprite.piece)
         return self.square_sprites[(square.rank, square.file)]
+
+    def is_white_in_check(self):
+        return self.board.position.is_in_check(self.board.white_king)
+
+    def is_black_in_check(self):
+        return self.board.position.is_in_check(self.board.black_king)
+
+    def attacked_king_sprite(self, attacking_piece):
+        checked_king_sprite = \
+            self.piece_sprites[self.board.white_king if attacking_piece.is_black() else self.board.black_king]
+        return self.current_square_sprite(checked_king_sprite)

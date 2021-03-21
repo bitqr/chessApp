@@ -24,6 +24,7 @@ class Board:
         self.initialize_side(Color.BLACK)
         self.position.update_controlled_squares(self.squares)
         self.position.update_legal_moves(self.squares)
+        self.position.color_to_move = Color.WHITE
 
     def initialize_side(self, piece_color):
         base_rank = 0
@@ -57,8 +58,26 @@ class Board:
             self.put_piece_on_square(rook_move.piece, rook_move.square.rank, rook_move.square.file)
             rook_move.piece.never_moved = False
         move.piece.never_moved = False
+        self.position.color_to_move = move.piece.opposite_color()
         self.position.update_controlled_squares(self.squares)
         self.position.update_legal_moves(self.squares)
+        self.determine_check_situation(move)
+
+    def determine_check_situation(self, move):
+        remaining_moves = self.position.legal_moves_count()
+        print(remaining_moves)
+        if move.piece.is_white():
+            if self.position.is_in_check(self.black_king):
+                move.is_check = True
+                if remaining_moves == 0:
+                    print("Checkmate! White Wins")
+        else:
+            if self.position.is_in_check(self.white_king):
+                move.is_check = True
+                if remaining_moves == 0:
+                    print("Checkmate! Black Wins")
+        if remaining_moves == 0 and not move.is_check:
+            print("Stalemate! Draw")
 
     def leave_square(self, piece):
         current_square = self.position.pieces_positions[piece]

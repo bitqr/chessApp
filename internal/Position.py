@@ -1,9 +1,11 @@
 from internal import util
+from internal.Color import Color
 
 
 class Position:
 
     def __init__(self):
+        self.color_to_move = Color.WHITE
         self.pieces_positions = dict()
         self.legal_moves = dict()
         self.controlled_squares = dict()
@@ -36,9 +38,12 @@ class Position:
 
     def compute_legal_moves(self, piece, all_squares):
         self.legal_moves[piece] = []
+        # Pieces cannot be moved if it's not their turn
+        if not piece.color == self.color_to_move:
+            return self.legal_moves[piece]
         pseudo_legal_moves = self.compute_pseudo_legal_moves(piece, all_squares)
         for item in pseudo_legal_moves:
-            original_controlled_squares = dict(self.controlled_squares)
+            original_controlled_squares = util.dict_copy(self.controlled_squares)
             # Make the temporary move
             # Free the origin square
             square = self.pieces_positions[piece]
@@ -98,10 +103,9 @@ class Position:
         self.pieces_positions[piece] = square
 
     def is_controlled(self, rank, file, color):
-        if color in self.controlled_squares.keys():
-            for piece in self.controlled_squares[color].keys():
-                if (rank, file) in self.controlled_squares[color][piece]:
-                    return True
+        for piece in self.controlled_squares[color].keys():
+            if (rank, file) in self.controlled_squares[color][piece]:
+                return True
         return False
 
     def add_captured_piece(self, piece):
@@ -111,3 +115,10 @@ class Position:
     def is_in_check(self, king):
         king_square = self.pieces_positions[king]
         return self.is_controlled(king_square.rank, king_square.file, king.opposite_color())
+
+    def legal_moves_count(self):
+        result = 0
+        for piece in self.legal_moves.keys():
+            if piece.color == self.color_to_move:
+                result += len(self.legal_moves[piece])
+        return result
