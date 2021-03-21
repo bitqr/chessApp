@@ -115,3 +115,10 @@ class Position:
     def is_in_check(self, king):
         king_square = self.pieces_positions[king]
         return self.is_controlled(king_square.rank, king_square.file, king.opposite_color())
+
+    def legal_moves_count(self):
+        result = 0
+        for piece in self.legal_moves.keys():
+            if piece.color == self.color_to_move:
+                result += len(self.legal_moves[piece])
+        return result

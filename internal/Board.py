@@ -64,12 +64,20 @@ class Board:
         self.determine_check_situation(move)
 
     def determine_check_situation(self, move):
+        remaining_moves = self.position.legal_moves_count()
+        print(remaining_moves)
         if move.piece.is_white():
             if self.position.is_in_check(self.black_king):
                 move.is_check = True
+                if remaining_moves == 0:
+                    print("Checkmate! White Wins")
         else:
             if self.position.is_in_check(self.white_king):
                 move.is_check = True
+                if remaining_moves == 0:
+                    print("Checkmate! Black Wins")
+        if remaining_moves == 0 and not move.is_check:
+            print("Stalemate! Draw")
 
     def leave_square(self, piece):
         current_square = self.position.pieces_positions[piece]
