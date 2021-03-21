@@ -6,25 +6,108 @@ class Position:
     def __init__(self):
         self.pieces_positions = dict()
         self.legal_moves = dict()
+        self.controlled_squares = dict()
 
     def update_legal_moves(self, all_squares):
-        for piece in self.pieces_positions.keys():
+        pieces_list = list(self.pieces_positions.keys())
+        for piece in pieces_list:
             self.compute_legal_moves(piece, all_squares)
 
-    def compute_legal_moves(self, piece, all_squares):
+    def update_controlled_squares(self, all_squares):
+        for piece in self.pieces_positions.keys():
+            self.compute_controlled_squares(piece, all_squares)
+
+    def compute_pseudo_legal_moves(self, piece, all_squares):
         origin_square = self.pieces_positions[piece]
+        pseudo_legal_moves = []
         if piece.is_king():
-            self.legal_moves[piece] = util.king_squares(piece, origin_square, all_squares)
+            pseudo_legal_moves = util.king_squares(piece, origin_square, all_squares, self)
         if piece.is_pawn():
-            self.legal_moves[piece] = util.pawn_squares(piece, origin_square, all_squares)
+            pseudo_legal_moves = util.pawn_squares(piece, origin_square, all_squares)
         if piece.is_bishop():
-            self.legal_moves[piece] = util.bishop_squares(piece, origin_square, all_squares)
+            pseudo_legal_moves = util.bishop_squares(piece, origin_square, all_squares)
         if piece.is_rook():
-            self.legal_moves[piece] = util.rook_squares(piece, origin_square, all_squares)
+            pseudo_legal_moves = util.rook_squares(piece, origin_square, all_squares)
         if piece.is_queen():
-            self.legal_moves[piece] = util.queen_squares(piece, origin_square, all_squares)
+            pseudo_legal_moves = util.queen_squares(piece, origin_square, all_squares)
         if piece.is_knight():
-            self.legal_moves[piece] = util.knight_squares(piece, origin_square, all_squares)
+            pseudo_legal_moves = util.knight_squares(piece, origin_square, all_squares)
+        return pseudo_legal_moves
+
+    def compute_legal_moves(self, piece, all_squares):
+        self.legal_moves[piece] = []
+        pseudo_legal_moves = self.compute_pseudo_legal_moves(piece, all_squares)
+        for item in pseudo_legal_moves:
+            original_controlled_squares = dict(self.controlled_squares)
+            # Make the temporary move
+            # Free the origin square
+            square = self.pieces_positions[piece]
+            all_squares[(square.rank, square.file)].empty_content()
+            # If it's a capture, remove the captured piece
+            captured_piece = None
+            is_capture = not all_squares[item].is_free()
+            if is_capture:
+                captured_piece = all_squares[item].content
+                self.pieces_positions.pop(captured_piece)
+                self.controlled_squares[captured_piece.color][captured_piece] = []
+            # Fill the destination square
+            all_squares[item].content = piece
+            self.pieces_positions[piece] = all_squares[item]
+            # Update controlled squares
+            self.update_controlled_squares(all_squares)
+            # Find the king of the piece color and determine if it's in check
+            for each_piece in self.pieces_positions.keys():
+                if each_piece.color == piece.color and each_piece.is_king()\
+                        and not self.is_in_check(each_piece):
+                    self.legal_moves[piece].append(item)
+                    break
+            # Go back to previous position
+            all_squares[(square.rank, square.file)].content = piece
+            if is_capture:
+                all_squares[item].content = captured_piece
+                self.pieces_positions[captured_piece] = all_squares[item]
+            else:
+                all_squares[item].empty_content()
+            self.pieces_positions[piece] = square
+            self.controlled_squares = original_controlled_squares
+        return self.legal_moves[piece]
+
+    def compute_controlled_squares(self, piece, all_squares):
+        origin_square = self.pieces_positions[piece]
+        if piece.color not in self.controlled_squares:
+            self.controlled_squares[piece.color] = dict()
+        if piece.is_pawn():
+            self.controlled_squares[piece.color][piece] = \
+                util.pawn_controlled_squares(piece, self.pieces_positions[piece])
+        elif piece.is_bishop():
+            self.controlled_squares[piece.color][piece] =\
+                util.bishop_controlled_squares(origin_square, all_squares)
+        elif piece.is_rook():
+            self.controlled_squares[piece.color][piece] =\
+                util.rook_controlled_squares(origin_square, all_squares)
+        elif piece.is_queen():
+            self.controlled_squares[piece.color][piece] = \
+                util.queen_controlled_squares(origin_square, all_squares)
+        elif piece.is_knight():
+            self.controlled_squares[piece.color][piece] = \
+                util.knight_controlled_squares(origin_square)
+        else:
+            self.controlled_squares[piece.color][piece] = self.compute_pseudo_legal_moves(piece, all_squares)
 
     def update_position(self, piece, square):
         self.pieces_positions[piece] = square
+
+    def is_controlled(self, rank, file, color):
+        if color in self.controlled_squares.keys():
+            for piece in self.controlled_squares[color].keys():
+                if (rank, file) in self.controlled_squares[color][piece]:
+                    return True
+        return False
+
+    def add_captured_piece(self, piece):
+        self.pieces_positions.pop(piece)
+        self.controlled_squares[piece.color][piece] = []
+
+    def is_in_check(self, king):
+        king_square = self.pieces_positions[king]
+        return self.is_controlled(king_square.rank, king_square.file, king.opposite_color())

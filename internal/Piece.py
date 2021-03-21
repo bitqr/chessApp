@@ -33,3 +33,6 @@ class Piece:
 
     def is_knight(self):
         return self.type == PieceType.KNIGHT
+
+    def opposite_color(self):
+        return Color.WHITE if self.color == Color.BLACK else Color.BLACK

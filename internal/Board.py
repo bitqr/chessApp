@@ -15,11 +15,14 @@ class Board:
         for rank in range(size):
             for file in range(size):
                 self.squares[(rank, file)] = Square(rank, file)
+        self.white_king = Piece(PieceType.KING, Color.WHITE)
+        self.black_king = Piece(PieceType.KING, Color.BLACK)
         self.initialize_board()
 
     def initialize_board(self):
         self.initialize_side(Color.WHITE)
         self.initialize_side(Color.BLACK)
+        self.position.update_controlled_squares(self.squares)
         self.position.update_legal_moves(self.squares)
 
     def initialize_side(self, piece_color):
@@ -35,7 +38,7 @@ class Board:
         self.put_piece_on_square(Piece(PieceType.BISHOP, piece_color), base_rank, 2)
         self.put_piece_on_square(Piece(PieceType.BISHOP, piece_color), base_rank, 5)
         self.put_piece_on_square(Piece(PieceType.QUEEN, piece_color), base_rank, 3)
-        self.put_piece_on_square(Piece(PieceType.KING, piece_color), base_rank, 4)
+        self.put_piece_on_square(self.white_king if piece_color == Color.WHITE else self.black_king, base_rank, 4)
         for file in range(self.size):
             self.put_piece_on_square(Piece(PieceType.PAWN, piece_color), pawn_rank, file)
 
@@ -46,7 +49,7 @@ class Board:
         self.leave_square(move.piece)
         # If the move is a capture, remove the piece on the destination square
         if move.is_capture():
-            self.position.pieces_positions.pop(move.square.content)
+            self.position.add_captured_piece(move.square.content)
         self.put_piece_on_square(move.piece, move.square.rank, move.square.file)
         if move.is_castle:
             rook_move = compute_castling_rook_move(move, self.squares)
@@ -54,6 +57,7 @@ class Board:
             self.put_piece_on_square(rook_move.piece, rook_move.square.rank, rook_move.square.file)
             rook_move.piece.never_moved = False
         move.piece.never_moved = False
+        self.position.update_controlled_squares(self.squares)
         self.position.update_legal_moves(self.squares)
 
     def leave_square(self, piece):
