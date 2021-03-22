@@ -1,3 +1,7 @@
+import pygame
+
+from gui import settings
+from gui.GameInfoGUI import GameInfoGUI
 from internal.PieceType import PieceType
 from internal.Color import Color
 from internal.Move import Move
@@ -27,12 +31,12 @@ def square_to_sprite():
     return result
 
 
-def highlight_target_squares(window, selected_piece_sprite):
-    squares_coordinates = window.board.position.legal_moves[selected_piece_sprite.piece]
+def highlight_target_squares(chessboard, selected_piece_sprite):
+    squares_coordinates = chessboard.board.position.legal_moves[selected_piece_sprite.piece]
     result = []
-    square_sprite = window.current_square_sprite(selected_piece_sprite)
+    square_sprite = chessboard.current_square_sprite(selected_piece_sprite)
     for coordinates in squares_coordinates:
-        sprite = window.square_sprites[coordinates]
+        sprite = chessboard.square_sprites[coordinates]
         result.append(sprite)
         sprite.highlight()
     if len(squares_coordinates) == 0:
@@ -50,59 +54,76 @@ def cancel_highlighting_target_squares(square_sprites):
         square_sprite.cancel_highlight()
 
 
-def perform_move_on_board(window, selected_piece_sprite, square_sprite, event_position):
+def perform_move_on_board(game_info, chessboard, selected_piece_sprite, square_sprite, event_position):
     # First, remove check highlighted square
-    if window.check_highlighted_square_sprite:
-        window.check_highlighted_square_sprite.un_highlight()
-        window.check_highlighted_square_sprite = None
+    if chessboard.check_highlighted_square_sprite:
+        chessboard.check_highlighted_square_sprite.un_highlight()
+        chessboard.check_highlighted_square_sprite = None
     move = Move(selected_piece_sprite.piece, square_sprite.square)
     is_capture = move.is_capture()
-    window.board.apply_move(move)
+    chessboard.board.apply_move(move)
     if is_capture:
         # Look for the captured piece sprite and delete it
-        for piece_sprite in window.piece_group.sprites():
+        for piece_sprite in chessboard.piece_group.sprites():
             if piece_sprite != selected_piece_sprite \
                     and piece_sprite.rect.collidepoint(event_position):
-                window.piece_group.remove(piece_sprite)
+                chessboard.piece_group.remove(piece_sprite)
                 break
     if move.is_castle:
         # Also move the additional rook on the board
-        rook = window.board.squares[(move.square.rank, 5)].content if move.square.file == 6 \
-            else window.board.squares[(move.square.rank, 3)].content
-        rook_sprite = window.piece_sprites[rook]
-        rook_sprite.move_to_square(window.current_square_sprite(rook_sprite))
-    checked_king_current_square_sprite = window.attacked_king_sprite(move.piece)
+        rook = chessboard.board.squares[(move.square.rank, 5)].content if move.square.file == 6 \
+            else chessboard.board.squares[(move.square.rank, 3)].content
+        rook_sprite = chessboard.piece_sprites[rook]
+        rook_sprite.move_to_square(chessboard.current_square_sprite(rook_sprite))
+    checked_king_current_square_sprite = chessboard.attacked_king_sprite(move.piece)
     if move.is_check:
         # Highlight opponent king
         checked_king_current_square_sprite.signal_check()
-        window.check_highlighted_square_sprite = checked_king_current_square_sprite
-    end_drag_and_drop_move(window, selected_piece_sprite)
+        chessboard.check_highlighted_square_sprite = checked_king_current_square_sprite
+    game_info.update_text()
+    end_drag_and_drop_move(chessboard, selected_piece_sprite)
 
 
-def end_drag_and_drop_move(window, selected_piece_sprite):
-    selected_piece_sprite.move_to_square(window.current_square_sprite(selected_piece_sprite))
-    window.dragging_group.remove(selected_piece_sprite)
+def end_drag_and_drop_move(chessboard, selected_piece_sprite):
+    selected_piece_sprite.move_to_square(chessboard.current_square_sprite(selected_piece_sprite))
+    chessboard.dragging_group.remove(selected_piece_sprite)
+    chessboard.piece_group.add(selected_piece_sprite)
 
 
-def release_piece_after_drag_and_drop(window, selected_piece_sprite, target_squares, event_position):
+def release_piece_after_drag_and_drop(game_info, chessboard, selected_piece_sprite, target_squares, event_position):
     found_square = False
     for square_sprite in target_squares:
         if square_sprite.rect.collidepoint(event_position):
             found_square = True
-            perform_move_on_board(window, selected_piece_sprite, square_sprite, event_position)
+            perform_move_on_board(game_info, chessboard, selected_piece_sprite, square_sprite, event_position)
             break
     if not found_square:
-        end_drag_and_drop_move(window, selected_piece_sprite)
+        end_drag_and_drop_move(chessboard, selected_piece_sprite)
         cancel_highlighting_target_squares(target_squares)
+        chessboard.current_square_sprite(selected_piece_sprite).cancel_highlight()
     else:
         un_highlight_target_squares(target_squares)
 
 
-def select_piece_sprite_for_first_click_move(window, event_position, selected_piece_sprite):
-    for piece_sprite in window.piece_group.sprites():
+def select_piece_sprite_for_first_click_move(chessboard, event_position, selected_piece_sprite):
+    for piece_sprite in chessboard.piece_group.sprites():
         if piece_sprite.rect.collidepoint(event_position):
             # Drag and drop can start here only if there are target squares
-            target_squares = highlight_target_squares(window, piece_sprite)
+            target_squares = highlight_target_squares(chessboard, piece_sprite)
             selected_piece_sprite = piece_sprite
             return selected_piece_sprite, target_squares
     return selected_piece_sprite, []
+
+
+def create_game_info_group(game):
+    game_info_window = GameInfoGUI(
+        game,
+        settings.GAME_INFO_TOP_LEFT_X,
+        settings.GAME_INFO_TOP_LEFT_Y,
+        settings.GAME_INFO_WIDTH,
+        settings.GAME_INFO_HEIGHT,
+        settings.GAME_INFO_COLOR
+    )
+    game_info_window_group = pygame.sprite.Group()
+    game_info_window_group.add(game_info_window)
+    return game_info_window, game_info_window_group
