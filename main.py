@@ -1,3 +1,5 @@
+from gui import settings
+from gui.ButtonGUI import ButtonGUI
 from internal.Board import Board
 from gui.BoardGUI import BoardGUI
 import gui.util
@@ -5,7 +7,45 @@ import pygame
 import sys
 
 
+def open_main_menu(screen):
+    pygame.display.init()
+    background_image = pygame.sprite.Sprite()
+    background_image.image = pygame.image.load("sprites/main_menu.jpeg").convert()
+    background_image.image = pygame.transform.scale(background_image.image,
+                                                    [settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT])
+    background_image.rect = background_image.image.get_rect()
+    background_group = pygame.sprite.Group()
+    background_group.add(background_image)
+
+    start_game_button = ButtonGUI(
+        settings.START_BUTTON_TOP_LEFT_X,
+        settings.START_BUTTON_TOP_LEFT_Y,
+        settings.START_BUTTON_WIDTH,
+        settings.START_BUTTON_HEIGHT,
+        settings.START_BUTTON_TEXT,
+        settings.START_BUTTON_COLOR,
+        settings.START_BUTTON_TEXT_COLOR
+    )
+
+    run = True
+    while run:
+        pygame.display.flip()
+        background_group.draw(screen)
+        start_game_button.draw(screen)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if start_game_button.contains_position(event.pos):
+                    print("Clicked start game")
+    pygame.quit()
+    sys.exit()
+
+
 def run_app(window):
+    board = Board(8)
+    chessboard = BoardGUI(board, 100)
+    chessboard.initialize_board(board, screen)
     pygame.display.init()
     run = True
     selected_piece_sprite = None
@@ -53,10 +93,7 @@ def run_app(window):
 
 if __name__ == '__main__':
     pygame.init()
-    board = Board(8)
-    chessboard = BoardGUI(board, 100)
-    screen = pygame.display.set_mode((chessboard.board_width, chessboard.board_height))
     pygame.display.set_caption("Chess App")
-    chessboard.initialize_board(board, screen)
-
-    run_app(chessboard)
+    screen = pygame.display.set_mode((settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT))
+    open_main_menu(screen)
+    #run_app(chessboard)
