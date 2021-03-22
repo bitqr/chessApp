@@ -9,9 +9,6 @@ Will contain:
 
 # Next Objectives:
 
-- Start playing a game
-   - Notion of Game, Player and GUI environment
-
 - Advanced notions
    - Add the move: En-Passant
    - Pawn promotion
