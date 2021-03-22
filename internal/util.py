@@ -17,6 +17,7 @@ game_result_to_string = {
     GameResult.BLACK_WINS_ON_TIME: "Time out for White! Black wins!"
 }
 
+
 def piece_color_to_string(piece_color):
     return 'White' if piece_color == Color.WHITE else 'Black'
 

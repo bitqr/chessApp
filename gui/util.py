@@ -54,7 +54,7 @@ def cancel_highlighting_target_squares(square_sprites):
         square_sprite.cancel_highlight()
 
 
-def perform_move_on_board(chessboard, selected_piece_sprite, square_sprite, event_position):
+def perform_move_on_board(game_info, chessboard, selected_piece_sprite, square_sprite, event_position):
     # First, remove check highlighted square
     if chessboard.check_highlighted_square_sprite:
         chessboard.check_highlighted_square_sprite.un_highlight()
@@ -80,6 +80,7 @@ def perform_move_on_board(chessboard, selected_piece_sprite, square_sprite, even
         # Highlight opponent king
         checked_king_current_square_sprite.signal_check()
         chessboard.check_highlighted_square_sprite = checked_king_current_square_sprite
+    game_info.update_text()
     end_drag_and_drop_move(chessboard, selected_piece_sprite)
 
 
@@ -89,12 +90,12 @@ def end_drag_and_drop_move(chessboard, selected_piece_sprite):
     chessboard.piece_group.add(selected_piece_sprite)
 
 
-def release_piece_after_drag_and_drop(chessboard, selected_piece_sprite, target_squares, event_position):
+def release_piece_after_drag_and_drop(game_info, chessboard, selected_piece_sprite, target_squares, event_position):
     found_square = False
     for square_sprite in target_squares:
         if square_sprite.rect.collidepoint(event_position):
             found_square = True
-            perform_move_on_board(chessboard, selected_piece_sprite, square_sprite, event_position)
+            perform_move_on_board(game_info, chessboard, selected_piece_sprite, square_sprite, event_position)
             break
     if not found_square:
         end_drag_and_drop_move(chessboard, selected_piece_sprite)
@@ -125,4 +126,4 @@ def create_game_info_group(game):
     )
     game_info_window_group = pygame.sprite.Group()
     game_info_window_group.add(game_info_window)
-    return game_info_window_group
+    return game_info_window, game_info_window_group

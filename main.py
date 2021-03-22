@@ -48,7 +48,7 @@ def open_main_menu(window):
 
 def run_game():
     game = Game()
-    game_info_group = gui.util.create_game_info_group(game)
+    game_info_window, game_info_group = gui.util.create_game_info_group(game)
     chessboard = BoardGUI(game.board, settings.SQUARE_SIZE)
     chessboard.initialize_board(game.board)
     pygame.display.init()
@@ -80,7 +80,7 @@ def run_game():
                     # Clicked on potential target square
                     for square_sprite in target_squares:
                         if square_sprite.rect.collidepoint(event.pos):
-                            gui.util.perform_move_on_board(chessboard, selected_piece_sprite, square_sprite, event.pos)
+                            gui.util.perform_move_on_board(game_info_window, chessboard, selected_piece_sprite, square_sprite, event.pos)
                             if game.is_over():
                                 print(util.game_result_to_string[game.result])
                             break
@@ -108,7 +108,7 @@ def run_game():
                 # A piece is being released OR has just been selected by a left click
                 if drag_in_progress:
                     gui.util.release_piece_after_drag_and_drop(
-                        chessboard, selected_piece_sprite, target_squares, event.pos
+                        game_info_window, chessboard, selected_piece_sprite, target_squares, event.pos
                     )
                     if game.is_over():
                         print(util.game_result_to_string[game.result])
