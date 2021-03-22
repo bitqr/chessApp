@@ -51,6 +51,7 @@ def king_squares(king, square, all_squares, position):
     if king.never_moved \
             and square.file == KING_FILE \
             and all_squares[(square.rank, square.file + 1)].is_free() \
+            and not position.is_controlled(square.rank, square.file, king.opposite_color()) \
             and not position.is_controlled(square.rank, square.file + 1, king.opposite_color()) \
             and all_squares[(square.rank, square.file + 2)].is_free() \
             and not position.is_controlled(square.rank, square.file + 2, king.opposite_color()) \
@@ -59,7 +60,9 @@ def king_squares(king, square, all_squares, position):
         result.append((square.rank, square.file + 2))
     # Look for queen-side castle
     if king.never_moved \
+            and square.file == KING_FILE \
             and all_squares[(square.rank, square.file - 1)].is_free() \
+            and not position.is_controlled(square.rank, square.file, king.opposite_color()) \
             and not position.is_controlled(square.rank, square.file - 1, king.opposite_color()) \
             and all_squares[(square.rank, square.file - 2)].is_free() \
             and not position.is_controlled(square.rank, square.file - 2, king.opposite_color()) \

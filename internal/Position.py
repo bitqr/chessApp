@@ -43,6 +43,8 @@ class Position:
             return self.legal_moves[piece]
         pseudo_legal_moves = self.compute_pseudo_legal_moves(piece, all_squares)
         for item in pseudo_legal_moves:
+            # Separately consider the case: King in check and move is a castle
+
             original_controlled_squares = util.dict_copy(self.controlled_squares)
             # Make the temporary move
             # Free the origin square

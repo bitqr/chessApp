@@ -7,7 +7,7 @@ import pygame
 import sys
 
 
-def open_main_menu(screen):
+def open_main_menu(window):
     pygame.display.init()
     background_image = pygame.sprite.Sprite()
     background_image.image = pygame.image.load("sprites/main_menu.jpeg").convert()
@@ -30,19 +30,19 @@ def open_main_menu(screen):
     run = True
     while run:
         pygame.display.flip()
-        background_group.draw(screen)
-        start_game_button.draw(screen)
+        background_group.draw(window)
+        start_game_button.draw(window)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if start_game_button.contains_position(event.pos):
-                    print("Clicked start game")
+                    run_app()
     pygame.quit()
     sys.exit()
 
 
-def run_app(window):
+def run_app():
     board = Board(8)
     chessboard = BoardGUI(board, 100)
     chessboard.initialize_board(board, screen)
@@ -64,29 +64,31 @@ def run_app(window):
                     # Clicked on potential target square
                     for square_sprite in target_squares:
                         if square_sprite.rect.collidepoint(event.pos):
-                            gui.util.perform_move_on_board(window, selected_piece_sprite, square_sprite, event.pos)
+                            gui.util.perform_move_on_board(chessboard, selected_piece_sprite, square_sprite, event.pos)
                             break
-                    window.current_square_sprite(selected_piece_sprite).cancel_highlight()
+                    chessboard.current_square_sprite(selected_piece_sprite).cancel_highlight()
                     selected_piece_sprite = None
                 else:
                     # 1st click for a move
                     selected_piece_sprite, target_squares =\
-                        gui.util.select_piece_sprite_for_first_click_move(window, event.pos, selected_piece_sprite)
+                        gui.util.select_piece_sprite_for_first_click_move(chessboard, event.pos, selected_piece_sprite)
             elif event.type == pygame.MOUSEMOTION:
                 if held_button and selected_piece_sprite:
                     drag_in_progress = True
                     # A piece is being dragged
-                    window.dragging_group.add(selected_piece_sprite)
+                    chessboard.dragging_group.add(selected_piece_sprite)
                     selected_piece_sprite.move_relative(event.rel)
             elif event.type == pygame.MOUSEBUTTONUP:
                 held_button = False
                 # A piece is being released OR has just been selected by a left click
                 if drag_in_progress:
-                    gui.util.release_piece_after_drag_and_drop(window, selected_piece_sprite, target_squares, event.pos)
+                    gui.util.release_piece_after_drag_and_drop(
+                        chessboard, selected_piece_sprite, target_squares, event.pos
+                    )
                     selected_piece_sprite = None
                 drag_in_progress = False
         pygame.display.flip()
-        window.draw_board(screen)
+        chessboard.draw_board(screen)
     pygame.quit()
     sys.exit()
 
@@ -96,4 +98,3 @@ if __name__ == '__main__':
     pygame.display.set_caption("Chess App")
     screen = pygame.display.set_mode((settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT))
     open_main_menu(screen)
-    #run_app(chessboard)
