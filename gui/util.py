@@ -1,3 +1,7 @@
+import pygame
+
+from gui import settings
+from gui.GameInfoGUI import GameInfoGUI
 from internal.PieceType import PieceType
 from internal.Color import Color
 from internal.Move import Move
@@ -82,6 +86,7 @@ def perform_move_on_board(chessboard, selected_piece_sprite, square_sprite, even
 def end_drag_and_drop_move(chessboard, selected_piece_sprite):
     selected_piece_sprite.move_to_square(chessboard.current_square_sprite(selected_piece_sprite))
     chessboard.dragging_group.remove(selected_piece_sprite)
+    chessboard.piece_group.add(selected_piece_sprite)
 
 
 def release_piece_after_drag_and_drop(chessboard, selected_piece_sprite, target_squares, event_position):
@@ -107,3 +112,17 @@ def select_piece_sprite_for_first_click_move(chessboard, event_position, selecte
             selected_piece_sprite = piece_sprite
             return selected_piece_sprite, target_squares
     return selected_piece_sprite, []
+
+
+def create_game_info_group(game):
+    game_info_window = GameInfoGUI(
+        game,
+        settings.GAME_INFO_TOP_LEFT_X,
+        settings.GAME_INFO_TOP_LEFT_Y,
+        settings.GAME_INFO_WIDTH,
+        settings.GAME_INFO_HEIGHT,
+        settings.GAME_INFO_COLOR
+    )
+    game_info_window_group = pygame.sprite.Group()
+    game_info_window_group.add(game_info_window)
+    return game_info_window_group

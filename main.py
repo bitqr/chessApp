@@ -1,10 +1,12 @@
 from gui import settings
 from gui.ButtonGUI import ButtonGUI
-from internal.Board import Board
 from gui.BoardGUI import BoardGUI
 import gui.util
 import pygame
 import sys
+
+from internal import util
+from internal.Game import Game
 
 
 def open_main_menu(window):
@@ -37,21 +39,33 @@ def open_main_menu(window):
                 run = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if start_game_button.contains_position(event.pos):
-                    run_app()
+                    screen.fill(settings.CLEAR_SCREEN_COLOR)
+                    background_group.draw(window)
+                    return run_game()
     pygame.quit()
     sys.exit()
 
 
-def run_app():
-    board = Board(8)
-    chessboard = BoardGUI(board, 100)
-    chessboard.initialize_board(board, screen)
+def run_game():
+    game = Game()
+    game_info_group = gui.util.create_game_info_group(game)
+    chessboard = BoardGUI(game.board, settings.SQUARE_SIZE)
+    chessboard.initialize_board(game.board)
     pygame.display.init()
     run = True
     selected_piece_sprite = None
     target_squares = []
     held_button = False
     drag_in_progress = False
+    restart_button = ButtonGUI(
+        settings.START_BUTTON_TOP_LEFT_X,
+        settings.START_BUTTON_TOP_LEFT_Y,
+        settings.START_BUTTON_WIDTH,
+        settings.START_BUTTON_HEIGHT,
+        settings.RESTART_BUTTON_TEXT,
+        settings.RESTART_BUTTON_COLOR,
+        settings.START_BUTTON_TEXT_COLOR
+    )
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -59,12 +73,16 @@ def run_app():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 held_button = True
                 # User clicked on something
+                if restart_button.contains_position(event.pos):
+                    return run_game()
                 if selected_piece_sprite:
                     gui.util.cancel_highlighting_target_squares(target_squares)
                     # Clicked on potential target square
                     for square_sprite in target_squares:
                         if square_sprite.rect.collidepoint(event.pos):
                             gui.util.perform_move_on_board(chessboard, selected_piece_sprite, square_sprite, event.pos)
+                            if game.is_over():
+                                print(util.game_result_to_string[game.result])
                             break
                     chessboard.current_square_sprite(selected_piece_sprite).cancel_highlight()
                     selected_piece_sprite = None
@@ -77,7 +95,14 @@ def run_app():
                     drag_in_progress = True
                     # A piece is being dragged
                     chessboard.dragging_group.add(selected_piece_sprite)
-                    selected_piece_sprite.move_relative(event.rel)
+                    if chessboard.contains(selected_piece_sprite):
+                        selected_piece_sprite.move_relative(event.rel)
+                    else:
+                        gui.util.end_drag_and_drop_move(chessboard, selected_piece_sprite)
+                        gui.util.cancel_highlighting_target_squares(target_squares)
+                        chessboard.current_square_sprite(selected_piece_sprite).cancel_highlight()
+                        selected_piece_sprite = None
+                        drag_in_progress = False
             elif event.type == pygame.MOUSEBUTTONUP:
                 held_button = False
                 # A piece is being released OR has just been selected by a left click
@@ -85,10 +110,14 @@ def run_app():
                     gui.util.release_piece_after_drag_and_drop(
                         chessboard, selected_piece_sprite, target_squares, event.pos
                     )
+                    if game.is_over():
+                        print(util.game_result_to_string[game.result])
                     selected_piece_sprite = None
                 drag_in_progress = False
         pygame.display.flip()
+        restart_button.draw(screen)
         chessboard.draw_board(screen)
+        game_info_group.draw(screen)
     pygame.quit()
     sys.exit()
 

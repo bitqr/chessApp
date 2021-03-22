@@ -1,9 +1,21 @@
 from internal.Color import Color
+from internal.GameResult import GameResult
 from internal.Move import Move
 from internal.PieceType import PieceType
 
 KING_FILE = 4
-
+FILE_NAMES = ["a", "b", "c", "d", "e", "f", "g", "h"]
+game_result_to_string = {
+    GameResult.WHITE_WINS_BY_CHECKMATE: "Checkmate! White wins!",
+    GameResult.BLACK_WINS_BY_CHECKMATE: "Checkmate! Black wins!",
+    GameResult.WHITE_WINS_BY_RESIGNATION: "Black resigned! White wins!",
+    GameResult.BLACK_WINS_BY_RESIGNATION: "White resigned! Black wins!",
+    GameResult.DRAW_BY_MOVE_REPEAT: "Draw by move repeat!",
+    GameResult.DRAW_BY_STALEMATE: "Draw by stalemate!",
+    GameResult.DRAW_BY_MUTUAL_AGREEMENT: "Players agreed on a draw!",
+    GameResult.WHITE_WINS_ON_TIME: "Time out for Black! White wins!",
+    GameResult.BLACK_WINS_ON_TIME: "Time out for White! Black wins!"
+}
 
 def piece_color_to_string(piece_color):
     return 'White' if piece_color == Color.WHITE else 'Black'

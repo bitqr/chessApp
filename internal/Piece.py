@@ -11,11 +11,6 @@ class Piece:
     def opponent_direction(self):
         return -1 if self.color == Color.WHITE else 1
 
-    def to_string(self):
-        if self.type == PieceType.NONE:
-            return 'Nothing'
-        return f'{piece_color_to_string(self.color)} {piece_type_to_string(self.type)}'
-
     def is_king(self):
         return self.type == PieceType.KING
 
@@ -42,3 +37,6 @@ class Piece:
 
     def opposite_color(self):
         return Color.WHITE if self.color == Color.BLACK else Color.BLACK
+
+    def to_string(self):
+        return f'{piece_color_to_string(self.color)}: {piece_type_to_string(self.type)}'

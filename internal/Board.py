@@ -1,3 +1,4 @@
+from internal.GameResult import GameResult
 from internal.PieceType import PieceType
 from internal.Color import Color
 from internal.Piece import Piece
@@ -8,7 +9,8 @@ from internal.util import compute_castling_rook_move
 
 class Board:
 
-    def __init__(self, size):
+    def __init__(self, size, game):
+        self.game = game
         self.squares = dict()
         self.size = size
         self.position = Position()
@@ -47,10 +49,12 @@ class Board:
         return self.position.pieces_positions[piece]
 
     def apply_move(self, move):
+        origin_square = self.position.pieces_positions[move.piece]
+        target_piece = move.square.content
         self.leave_square(move.piece)
         # If the move is a capture, remove the piece on the destination square
         if move.is_capture():
-            self.position.add_captured_piece(move.square.content)
+            self.game.add_captured_piece(move.square.content, self.position)
         self.put_piece_on_square(move.piece, move.square.rank, move.square.file)
         if move.is_castle:
             rook_move = compute_castling_rook_move(move, self.squares)
@@ -58,26 +62,28 @@ class Board:
             self.put_piece_on_square(rook_move.piece, rook_move.square.rank, rook_move.square.file)
             rook_move.piece.never_moved = False
         move.piece.never_moved = False
+        self.game.move_history.append(move)
         self.position.color_to_move = move.piece.opposite_color()
         self.position.update_controlled_squares(self.squares)
         self.position.update_legal_moves(self.squares)
         self.determine_check_situation(move)
+        print(move.to_string(origin_square, target_piece))
 
     def determine_check_situation(self, move):
         remaining_moves = self.position.legal_moves_count()
-        print(remaining_moves)
+        # print(remaining_moves)
         if move.piece.is_white():
             if self.position.is_in_check(self.black_king):
                 move.is_check = True
                 if remaining_moves == 0:
-                    print("Checkmate! White Wins")
+                    self.game.result = GameResult.WHITE_WINS_BY_CHECKMATE
         else:
             if self.position.is_in_check(self.white_king):
                 move.is_check = True
                 if remaining_moves == 0:
-                    print("Checkmate! Black Wins")
+                    self.game.result = GameResult.BLACK_WINS_BY_CHECKMATE
         if remaining_moves == 0 and not move.is_check:
-            print("Stalemate! Draw")
+            self.game.result = GameResult.DRAW_BY_STALEMATE
 
     def leave_square(self, piece):
         current_square = self.position.pieces_positions[piece]

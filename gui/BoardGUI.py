@@ -20,7 +20,7 @@ class BoardGUI:
         self.board_height = board.size * square_size
         self.check_highlighted_square_sprite = None
 
-    def initialize_board(self, board, screen):
+    def initialize_board(self, board):
         for rank in range(board.size):
             for file in range(board.size):
                 square = board.squares[(rank, file)]
@@ -32,13 +32,15 @@ class BoardGUI:
                     piece_sprite = self.create_piece(piece, board.position.pieces_positions[piece])
                     self.piece_sprites[piece] = piece_sprite
                     self.piece_group.add(piece_sprite)
-        self.draw_board(screen)
 
     def draw_board(self, screen):
         # Draw squares before pieces
         self.square_group.draw(screen)
         self.piece_group.draw(screen)
-        self.dragging_group.draw(screen)
+        if len(self.dragging_group) > 0:
+            dragged_piece = self.dragging_group.sprites()[0]
+            if self.contains(dragged_piece):
+                self.dragging_group.draw(screen)
 
     def create_square(self, square):
         return SquareGUI(
@@ -69,3 +71,6 @@ class BoardGUI:
         checked_king_sprite = \
             self.piece_sprites[self.board.white_king if attacking_piece.is_black() else self.board.black_king]
         return self.current_square_sprite(checked_king_sprite)
+
+    def contains(self, piece_sprite):
+        return piece_sprite.rect.bottom <= self.board_width and piece_sprite.rect.right - 10 <= self.board_height
