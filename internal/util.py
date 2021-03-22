@@ -68,7 +68,6 @@ def king_squares(king, square, all_squares, position):
             and not position.is_controlled(square.rank, square.file + 1, king.opposite_color()) \
             and all_squares[(square.rank, square.file + 2)].is_free() \
             and not position.is_controlled(square.rank, square.file + 2, king.opposite_color()) \
-            and all_squares[(square.rank, square.file + 3)].content.is_rook() \
             and all_squares[(square.rank, square.file + 3)].content.never_moved:
         result.append((square.rank, square.file + 2))
     # Look for queen-side castle
@@ -80,7 +79,6 @@ def king_squares(king, square, all_squares, position):
             and all_squares[(square.rank, square.file - 2)].is_free() \
             and not position.is_controlled(square.rank, square.file - 2, king.opposite_color()) \
             and all_squares[(square.rank, square.file - 3)].is_free() \
-            and all_squares[(square.rank, square.file - 4)].content.is_rook() \
             and all_squares[(square.rank, square.file - 4)].content.never_moved:
         result.append((square.rank, square.file - 2))
     return result

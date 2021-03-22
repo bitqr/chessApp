@@ -80,7 +80,9 @@ def run_game():
                     # Clicked on potential target square
                     for square_sprite in target_squares:
                         if square_sprite.rect.collidepoint(event.pos):
-                            gui.util.perform_move_on_board(game_info_window, chessboard, selected_piece_sprite, square_sprite, event.pos)
+                            gui.util.perform_move_on_board(
+                                game_info_window, chessboard, selected_piece_sprite, square_sprite, event.pos
+                            )
                             if game.is_over():
                                 print(util.game_result_to_string[game.result])
                             break
