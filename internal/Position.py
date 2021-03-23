@@ -9,6 +9,7 @@ class Position:
         self.pieces_positions = dict()
         self.legal_moves = dict()
         self.controlled_squares = dict()
+        self.latest_move = None
 
     def update_legal_moves(self, all_squares):
         pieces_list = list(self.pieces_positions.keys())
@@ -25,7 +26,7 @@ class Position:
         if piece.is_king():
             pseudo_legal_moves = util.king_squares(piece, origin_square, all_squares, self)
         if piece.is_pawn():
-            pseudo_legal_moves = util.pawn_squares(piece, origin_square, all_squares)
+            pseudo_legal_moves = util.pawn_squares(piece, origin_square, all_squares, self.latest_move)
         if piece.is_bishop():
             pseudo_legal_moves = util.bishop_squares(piece, origin_square, all_squares)
         if piece.is_rook():

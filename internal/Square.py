@@ -29,5 +29,8 @@ class Square:
     def contains_opponent_piece(self, piece):
         return not self.is_free() and self.content.color != piece.color
 
+    def contains_opponent_pawn(self, piece):
+        return not self.is_free() and self.content.color != piece.color and self.content.is_pawn()
+
     def to_string(self):
-        return f'{util.FILE_NAMES[self.file]}{self.rank + 1}'
+        return f'{util.FILE_NAMES[self.file]}{8 - self.rank}'

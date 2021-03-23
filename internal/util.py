@@ -23,11 +23,12 @@ def piece_color_to_string(piece_color):
 
 
 def compute_castling_rook_move(move, squares):
-    rook = squares[(move.square.rank, 7)].content if move.square.file == 6 \
-        else squares[(move.square.rank, 0)].content
-    rook_destination_file = 5 if move.square.file == 6 else 3
-    rook_destination_square = squares[(move.square.rank, rook_destination_file)]
-    return Move(rook, rook_destination_square)
+    rook_square = squares[(move.destination_square.rank, 7)] if move.destination_square.file == 6 \
+        else squares[(move.destination_square.rank, 0)]
+    rook = rook_square.content
+    rook_destination_file = 5 if move.destination_square.file == 6 else 3
+    rook_destination_square = squares[(move.destination_square.rank, rook_destination_file)]
+    return Move(rook_square, rook, rook_destination_square)
 
 
 def piece_type_to_string(piece_type):
@@ -68,6 +69,7 @@ def king_squares(king, square, all_squares, position):
             and not position.is_controlled(square.rank, square.file + 1, king.opposite_color()) \
             and all_squares[(square.rank, square.file + 2)].is_free() \
             and not position.is_controlled(square.rank, square.file + 2, king.opposite_color()) \
+            and all_squares[(square.rank, square.file + 3)].content.is_rook() \
             and all_squares[(square.rank, square.file + 3)].content.never_moved:
         result.append((square.rank, square.file + 2))
     # Look for queen-side castle
@@ -79,12 +81,13 @@ def king_squares(king, square, all_squares, position):
             and all_squares[(square.rank, square.file - 2)].is_free() \
             and not position.is_controlled(square.rank, square.file - 2, king.opposite_color()) \
             and all_squares[(square.rank, square.file - 3)].is_free() \
+            and all_squares[(square.rank, square.file - 4)].content.is_rook() \
             and all_squares[(square.rank, square.file - 4)].content.never_moved:
         result.append((square.rank, square.file - 2))
     return result
 
 
-def pawn_squares(pawn, square, all_squares):
+def pawn_squares(pawn, square, all_squares, latest_move):
     rank = square.rank + pawn.opponent_direction()
     if is_out_of_range(rank):
         return []
@@ -97,6 +100,18 @@ def pawn_squares(pawn, square, all_squares):
         result.append((rank, square.file - 1))
     if not is_out_of_range(square.file + 1) and all_squares[(rank, square.file + 1)].contains_opponent_piece(pawn):
         result.append((rank, square.file + 1))
+    # Look for En-Passant
+    if latest_move:
+        if not is_out_of_range(square.file + 1) \
+                and latest_move.destination_square == all_squares[(square.rank, square.file + 1)] \
+                and all_squares[(square.rank, square.file + 1)].contains_opponent_pawn(pawn) \
+                and latest_move.is_double_pawn_move:
+            result.append((rank, square.file + 1))
+        if not is_out_of_range(square.file - 1) \
+                and latest_move.destination_square == all_squares[(square.rank, square.file - 1)] \
+                and all_squares[(square.rank, square.file - 1)].contains_opponent_pawn(pawn) \
+                and latest_move.is_double_pawn_move:
+            result.append((rank, square.file - 1))
     return result
 
 

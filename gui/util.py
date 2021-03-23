@@ -59,10 +59,11 @@ def perform_move_on_board(game_info, chessboard, selected_piece_sprite, square_s
     if chessboard.check_highlighted_square_sprite:
         chessboard.check_highlighted_square_sprite.un_highlight()
         chessboard.check_highlighted_square_sprite = None
-    move = Move(selected_piece_sprite.piece, square_sprite.square)
-    is_capture = move.is_capture()
+    origin_square = chessboard.current_square_sprite(selected_piece_sprite).square
+    move = Move(origin_square, selected_piece_sprite.piece, square_sprite.square)
+    latest_move = chessboard.board.position.latest_move
     chessboard.board.apply_move(move)
-    if is_capture:
+    if move.is_capture:
         # Look for the captured piece sprite and delete it
         for piece_sprite in chessboard.piece_group.sprites():
             if piece_sprite != selected_piece_sprite \
@@ -71,11 +72,15 @@ def perform_move_on_board(game_info, chessboard, selected_piece_sprite, square_s
                 break
     if move.is_castle:
         # Also move the additional rook on the board
-        rook = chessboard.board.squares[(move.square.rank, 5)].content if move.square.file == 6 \
-            else chessboard.board.squares[(move.square.rank, 3)].content
+        rook = \
+            chessboard.board.squares[(move.destination_square.rank, 5)].content if move.destination_square.file == 6 \
+            else chessboard.board.squares[(move.destination_square.rank, 3)].content
         rook_sprite = chessboard.piece_sprites[rook]
         rook_sprite.move_to_square(chessboard.current_square_sprite(rook_sprite))
     checked_king_current_square_sprite = chessboard.attacked_king_sprite(move.piece)
+    if move.is_en_passant:
+        # Remove the captured pawn, which in this case is the latest moved piece
+        chessboard.piece_group.remove(chessboard.piece_sprites[latest_move.piece])
     if move.is_check:
         # Highlight opponent king
         checked_king_current_square_sprite.signal_check()

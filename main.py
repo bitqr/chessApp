@@ -5,7 +5,6 @@ import gui.util
 import pygame
 import sys
 
-from internal import util
 from internal.Game import Game
 
 
@@ -83,8 +82,6 @@ def run_game():
                             gui.util.perform_move_on_board(
                                 game_info_window, chessboard, selected_piece_sprite, square_sprite, event.pos
                             )
-                            if game.is_over():
-                                print(util.game_result_to_string[game.result])
                             break
                     chessboard.current_square_sprite(selected_piece_sprite).cancel_highlight()
                     selected_piece_sprite = None
@@ -112,8 +109,6 @@ def run_game():
                     gui.util.release_piece_after_drag_and_drop(
                         game_info_window, chessboard, selected_piece_sprite, target_squares, event.pos
                     )
-                    if game.is_over():
-                        print(util.game_result_to_string[game.result])
                     selected_piece_sprite = None
                 drag_in_progress = False
         pygame.display.flip()

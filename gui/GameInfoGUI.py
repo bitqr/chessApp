@@ -1,6 +1,7 @@
 import pygame
 
 from gui import settings
+from internal import util
 
 
 class GameInfoGUI(pygame.sprite.Sprite):

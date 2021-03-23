@@ -27,16 +27,19 @@ class Game:
         position.add_captured_piece(captured_piece)
 
     def to_string(self):
-        result = "Captured pieces:\n"
-        result += "Black:\n"
+        result = 'Captured pieces:\n'
+        result += 'Black:\n'
         for piece_type in self.captured_pieces[Color.WHITE]:
             count = self.captured_pieces[Color.WHITE][piece_type]
             if count > 0:
                 result += f'{util.piece_type_to_string(piece_type)} x {count}\n'
-        result += "-----------------------------------\n"
-        result += "White:\n"
+        result += '-----------------------------------\n'
+        result += 'White:\n'
         for piece_type in self.captured_pieces[Color.BLACK]:
             count = self.captured_pieces[Color.BLACK][piece_type]
             if count > 0:
                 result += f'{util.piece_type_to_string(piece_type)} x {count}\n'
+        result += '-----------------------------------\n'
+        if self.is_over():
+            result += util.game_result_to_string[self.result]
         return result
