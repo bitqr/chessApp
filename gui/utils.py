@@ -1,3 +1,5 @@
+import sys
+
 import pygame
 
 from gui import settings
@@ -36,7 +38,7 @@ def highlight_target_squares(chessboard, selected_piece_sprite):
     result = []
     square_sprite = chessboard.current_square_sprite(selected_piece_sprite)
     for coordinates in squares_coordinates:
-        sprite = chessboard.square_sprites[coordinates]
+        sprite = chessboard.square_sprites[coordinates[:2]]
         result.append(sprite)
         sprite.highlight()
     if len(squares_coordinates) == 0:
@@ -54,15 +56,26 @@ def cancel_highlighting_target_squares(square_sprites):
         square_sprite.cancel_highlight()
 
 
-def perform_move_on_board(game_info, chessboard, selected_piece_sprite, square_sprite, event_position):
+def perform_move_on_board(
+        game_info,
+        chessboard,
+        selected_piece_sprite,
+        destination_square_sprite,
+        event_position
+):
     # First, remove check highlighted square
     if chessboard.check_highlighted_square_sprite:
         chessboard.check_highlighted_square_sprite.un_highlight()
         chessboard.check_highlighted_square_sprite = None
-    move = Move(selected_piece_sprite.piece, square_sprite.square)
-    is_capture = move.is_capture()
+    origin_square = chessboard.current_square_sprite(selected_piece_sprite).square
+    move = Move(origin_square, selected_piece_sprite.piece, destination_square_sprite.square)
+    piece_type = PieceType.NONE
+    if move.is_promotion:
+        piece_type = run_pawn_promotion_selection(chessboard, move)
+        move.promoted_piece_type = piece_type
+    latest_move = chessboard.board.position.latest_move
     chessboard.board.apply_move(move)
-    if is_capture:
+    if move.is_capture:
         # Look for the captured piece sprite and delete it
         for piece_sprite in chessboard.piece_group.sprites():
             if piece_sprite != selected_piece_sprite \
@@ -71,11 +84,19 @@ def perform_move_on_board(game_info, chessboard, selected_piece_sprite, square_s
                 break
     if move.is_castle:
         # Also move the additional rook on the board
-        rook = chessboard.board.squares[(move.square.rank, 5)].content if move.square.file == 6 \
-            else chessboard.board.squares[(move.square.rank, 3)].content
+        rook = \
+            chessboard.board.squares[(move.destination_square.rank, 5)].content if move.destination_square.file == 6 \
+            else chessboard.board.squares[(move.destination_square.rank, 3)].content
         rook_sprite = chessboard.piece_sprites[rook]
         rook_sprite.move_to_square(chessboard.current_square_sprite(rook_sprite))
     checked_king_current_square_sprite = chessboard.attacked_king_sprite(move.piece)
+    if move.is_en_passant:
+        # Remove the captured pawn, which in this case is the latest moved piece
+        chessboard.piece_group.remove(chessboard.piece_sprites[latest_move.piece])
+    if move.is_promotion:
+        selected_piece_sprite.promote_pawn(
+            piece_type, destination_square_sprite.square.file, destination_square_sprite.square.rank
+        )
     if move.is_check:
         # Highlight opponent king
         checked_king_current_square_sprite.signal_check()
@@ -90,7 +111,13 @@ def end_drag_and_drop_move(chessboard, selected_piece_sprite):
     chessboard.piece_group.add(selected_piece_sprite)
 
 
-def release_piece_after_drag_and_drop(game_info, chessboard, selected_piece_sprite, target_squares, event_position):
+def release_piece_after_drag_and_drop(
+        game_info,
+        chessboard,
+        selected_piece_sprite,
+        target_squares,
+        event_position
+):
     found_square = False
     for square_sprite in target_squares:
         if square_sprite.rect.collidepoint(event_position):
@@ -127,3 +154,17 @@ def create_game_info_group(game):
     game_info_window_group = pygame.sprite.Group()
     game_info_window_group.add(game_info_window)
     return game_info_window, game_info_window_group
+
+
+def run_pawn_promotion_selection(chessboard, move):
+    run = True
+    while run:
+        pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                for promotion_piece_sprite in chessboard.promotion_piece_groups[move.piece.color].sprites():
+                    if promotion_piece_sprite.rect.collidepoint(event.pos):
+                        return promotion_piece_sprite.piece.type

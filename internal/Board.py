@@ -1,10 +1,15 @@
+import logging
+
 from internal.GameResult import GameResult
 from internal.PieceType import PieceType
 from internal.Color import Color
 from internal.Piece import Piece
 from internal.Position import Position
 from internal.Square import Square
-from internal.util import compute_castling_rook_move
+from internal.utils import compute_castling_rook_move
+
+
+logging.getLogger().setLevel(logging.INFO)
 
 
 class Board:
@@ -49,25 +54,36 @@ class Board:
         return self.position.pieces_positions[piece]
 
     def apply_move(self, move):
-        origin_square = self.position.pieces_positions[move.piece]
-        target_piece = move.square.content
+        target_piece = move.destination_square.content
         self.leave_square(move.piece)
         # If the move is a capture, remove the piece on the destination square
-        if move.is_capture():
-            self.game.add_captured_piece(move.square.content, self.position)
-        self.put_piece_on_square(move.piece, move.square.rank, move.square.file)
+        if move.is_capture:
+            self.game.add_captured_piece(target_piece, self.position)
+        self.put_piece_on_square(move.piece, move.destination_square.rank, move.destination_square.file)
         if move.is_castle:
             rook_move = compute_castling_rook_move(move, self.squares)
             self.leave_square(rook_move.piece)
-            self.put_piece_on_square(rook_move.piece, rook_move.square.rank, rook_move.square.file)
+            self.put_piece_on_square(
+                rook_move.piece,
+                rook_move.destination_square.rank,
+                rook_move.destination_square.file
+            )
             rook_move.piece.never_moved = False
+        if move.is_en_passant:
+            # In this very specific case, the capture square is NOT the landing square
+            captured_pawn_square = self.squares[(move.origin_square.rank, move.destination_square.file)]
+            self.game.add_captured_piece(captured_pawn_square.content, self.position)
+            captured_pawn_square.empty_content()
+        if move.is_promotion:
+            move.piece.promote(move.promoted_piece_type)
         move.piece.never_moved = False
+        self.position.latest_move = move
         self.game.move_history.append(move)
         self.position.color_to_move = move.piece.opposite_color()
         self.position.update_controlled_squares(self.squares)
         self.position.update_legal_moves(self.squares)
         self.determine_check_situation(move)
-        print(move.to_string(origin_square, target_piece))
+        logging.info(move.to_string(target_piece))
 
     def determine_check_situation(self, move):
         remaining_moves = self.position.legal_moves_count()

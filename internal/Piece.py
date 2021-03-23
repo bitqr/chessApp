@@ -1,4 +1,4 @@
-from internal.util import *
+from internal.utils import *
 
 
 class Piece:
@@ -38,5 +38,8 @@ class Piece:
     def opposite_color(self):
         return Color.WHITE if self.color == Color.BLACK else Color.BLACK
 
+    def promote(self, piece_type):
+        self.type = piece_type
+
     def to_string(self):
-        return f'{piece_color_to_string(self.color)}: {piece_type_to_string(self.type)}'
+        return '{0}: {1}'.format(piece_color_to_string(self.color), piece_type_to_string(self.type))

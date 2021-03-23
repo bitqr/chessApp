@@ -4,7 +4,7 @@ from internal.Move import Move
 from internal.PieceType import PieceType
 
 KING_FILE = 4
-FILE_NAMES = ["a", "b", "c", "d", "e", "f", "g", "h"]
+CHESSBOARD_FILE_NAMES = ["a", "b", "c", "d", "e", "f", "g", "h"]
 game_result_to_string = {
     GameResult.WHITE_WINS_BY_CHECKMATE: "Checkmate! White wins!",
     GameResult.BLACK_WINS_BY_CHECKMATE: "Checkmate! Black wins!",
@@ -23,11 +23,12 @@ def piece_color_to_string(piece_color):
 
 
 def compute_castling_rook_move(move, squares):
-    rook = squares[(move.square.rank, 7)].content if move.square.file == 6 \
-        else squares[(move.square.rank, 0)].content
-    rook_destination_file = 5 if move.square.file == 6 else 3
-    rook_destination_square = squares[(move.square.rank, rook_destination_file)]
-    return Move(rook, rook_destination_square)
+    rook_square = squares[(move.destination_square.rank, 7)] if move.destination_square.file == 6 \
+        else squares[(move.destination_square.rank, 0)]
+    rook = rook_square.content
+    rook_destination_file = 5 if move.destination_square.file == 6 else 3
+    rook_destination_square = squares[(move.destination_square.rank, rook_destination_file)]
+    return Move(rook_square, rook, rook_destination_square)
 
 
 def piece_type_to_string(piece_type):
@@ -86,19 +87,45 @@ def king_squares(king, square, all_squares, position):
     return result
 
 
-def pawn_squares(pawn, square, all_squares):
+def promotion_tuple(square_coordinates):
+    result = []
+    if square_coordinates[0] in [0, 7]:
+        # Pawn promotion
+        result.append((square_coordinates[0], square_coordinates[1], PieceType.KNIGHT))
+        result.append((square_coordinates[0], square_coordinates[1], PieceType.BISHOP))
+        result.append((square_coordinates[0], square_coordinates[1], PieceType.ROOK))
+        result.append((square_coordinates[0], square_coordinates[1], PieceType.QUEEN))
+    else:
+        result = [square_coordinates]
+    return result
+
+
+def pawn_squares(pawn, square, all_squares, latest_move):
     rank = square.rank + pawn.opponent_direction()
     if is_out_of_range(rank):
         return []
     result = []
     if all_squares[(rank, square.file)].is_free():
-        result.append((rank, square.file))
+        result.extend(promotion_tuple((rank, square.file)))
     if pawn.never_moved and all_squares[(rank + pawn.opponent_direction(), square.file)].is_free():
-        result.append((rank + pawn.opponent_direction(), square.file))
+        result.extend(promotion_tuple((rank + pawn.opponent_direction(), square.file)))
     if not is_out_of_range(square.file - 1) and all_squares[(rank, square.file - 1)].contains_opponent_piece(pawn):
-        result.append((rank, square.file - 1))
+        result.extend(promotion_tuple((rank, square.file - 1)))
     if not is_out_of_range(square.file + 1) and all_squares[(rank, square.file + 1)].contains_opponent_piece(pawn):
-        result.append((rank, square.file + 1))
+        result.extend(promotion_tuple((rank, square.file + 1)))
+
+    # Look for En-Passant
+    if latest_move:
+        if not is_out_of_range(square.file + 1) \
+                and latest_move.destination_square == all_squares[(square.rank, square.file + 1)] \
+                and all_squares[(square.rank, square.file + 1)].contains_opponent_pawn(pawn) \
+                and latest_move.is_double_pawn_move:
+            result.append((rank, square.file + 1))
+        if not is_out_of_range(square.file - 1) \
+                and latest_move.destination_square == all_squares[(square.rank, square.file - 1)] \
+                and all_squares[(square.rank, square.file - 1)].contains_opponent_pawn(pawn) \
+                and latest_move.is_double_pawn_move:
+            result.append((rank, square.file - 1))
     return result
 
 
