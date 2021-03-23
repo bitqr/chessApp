@@ -12,6 +12,9 @@ class Game:
         self.captured_pieces = dict()
         self.initialize_captured_pieces()
         self.result = GameResult.UNDEFINED
+        self.fifty_move_rule_counter = 0
+        self.can_be_drawn_by_fifty_move_rule = False
+        self.can_be_drawn_by_threefold_repetition = False
 
     def initialize_captured_pieces(self):
         self.captured_pieces[Color.WHITE] = dict()
@@ -25,6 +28,21 @@ class Game:
     def add_captured_piece(self, captured_piece, position):
         self.captured_pieces[captured_piece.color][captured_piece.type] += 1
         position.add_captured_piece(captured_piece)
+
+    def apply_resign(self):
+        if self.board.position.color_to_move == Color.WHITE:
+            self.result = GameResult.BLACK_WINS_BY_RESIGNATION
+        else:
+            self.result = GameResult.WHITE_WINS_BY_RESIGNATION
+        self.end()
+
+    def apply_draw(self):
+        if self.can_be_drawn_by_fifty_move_rule:
+            self.result = GameResult.DRAW_BY_50_MOVE_RULE
+            self.end()
+        if self.can_be_drawn_by_threefold_repetition:
+            self.result = GameResult.DRAW_BY_THREEFOLD_REPETITION
+            self.end()
 
     def to_string(self):
         result = 'Captured pieces:\nBlack:\n'
@@ -41,3 +59,10 @@ class Game:
         if self.is_over():
             result += utils.game_result_to_string[self.result]
         return result
+
+    def end(self):
+        for piece_key in self.board.position.legal_moves.keys():
+            self.board.position.legal_moves[piece_key] = []
+
+    def can_be_drawn(self):
+        return self.can_be_drawn_by_fifty_move_rule or self.can_be_drawn_by_threefold_repetition

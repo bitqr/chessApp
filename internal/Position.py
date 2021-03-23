@@ -12,6 +12,32 @@ class Position:
         self.controlled_squares = dict()
         self.latest_move = None
 
+    def left_pieces_on_board(self):
+        return self.pieces_positions.keys()
+
+    def is_dead_position(self):
+        pieces = self.left_pieces_on_board()
+        # King vs King
+        if len(pieces) == 2:
+            return True
+        # King & bishop vs King / King & Knight vs King
+        if len(pieces) == 3:
+            for piece in pieces:
+                if piece.is_bishop() or piece.is_knight():
+                    return True
+        # King & bishop vs King & bishop of same color
+        bishops_count = 0
+        first_bishop_square_color = None
+        if len(pieces) == 4:
+            for piece in pieces:
+                if piece.is_bishop() and bishops_count == 0:
+                    bishops_count = 1
+                    first_bishop_square_color = self.pieces_positions[piece].get_color()
+                elif piece.is_bishop and bishops_count == 1 \
+                        and self.pieces_positions[piece].get_color() == first_bishop_square_color:
+                    return True
+        return False
+
     def update_legal_moves(self, all_squares):
         pieces_list = list(self.pieces_positions.keys())
         for piece in pieces_list:

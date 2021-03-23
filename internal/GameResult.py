@@ -12,3 +12,5 @@ class GameResult(Enum):
     UNDEFINED = 8
     WHITE_WINS_ON_TIME = 9
     BLACK_WINS_ON_TIME = 10
+    DRAW_BY_DEAD_POSITION = 11
+    DRAW_BY_50_MOVE_RULE = 12
