@@ -39,4 +39,4 @@ class Piece:
         return Color.WHITE if self.color == Color.BLACK else Color.BLACK
 
     def to_string(self):
-        return f'{piece_color_to_string(self.color)}: {piece_type_to_string(self.type)}'
+        return '{0}: {1}'.format(piece_color_to_string(self.color), piece_type_to_string(self.type))

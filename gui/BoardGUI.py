@@ -46,14 +46,14 @@ class BoardGUI:
         return SquareGUI(
             square,
             self.square_size,
-            f'sprites/{self.square_to_sprite[square.get_color()]}.png'
+            'sprites/{0}.png'.format(self.square_to_sprite[square.get_color()])
         )
 
     def create_piece(self, piece, location_square):
         return PieceGUI(
             piece,
             self.square_size,
-            f'sprites/{self.piece_to_sprite[(piece.type, piece.color)]}.png',
+            'sprites/{0}.png'.format(self.piece_to_sprite[(piece.type, piece.color)]),
             location_square
         )
 

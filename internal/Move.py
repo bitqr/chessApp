@@ -55,7 +55,9 @@ class Move:
     def to_string(self, target_piece):
         delimiter = 'x' if target_piece.type != PieceType.NONE or self.is_en_passant else '_'
         result = \
-            f'{self.piece.to_string()}_{self.origin_square.to_string()}{delimiter}{self.destination_square.to_string()}'
+            '{0}_{1}{2}{3}'.format(
+                self.piece.to_string(), self.origin_square.to_string(), delimiter, self.destination_square.to_string()
+            )
         if self.is_king_side_castle:
             return '0-0'
         if self.is_queen_side_castle:
