@@ -56,6 +56,11 @@ def cancel_highlighting_target_squares(square_sprites):
         square_sprite.cancel_highlight()
 
 
+def resign(game_info, chessboard):
+    chessboard.board.game.apply_resign()
+    game_info.update_text()
+
+
 def perform_move_on_board(
         game_info,
         chessboard,

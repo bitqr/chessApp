@@ -65,6 +65,15 @@ def run_game():
         settings.RESTART_BUTTON_COLOR,
         settings.START_BUTTON_TEXT_COLOR
     )
+    resign_button = ButtonGUI(
+        settings.RESIGN_BUTTON_TOP_LEFT_X,
+        settings.RESIGN_BUTTON_TOP_LEFT_Y,
+        settings.RESIGN_BUTTON_WIDTH,
+        settings.RESIGN_BUTTON_HEIGHT,
+        settings.RESIGN_BUTTON_TEXT,
+        settings.RESIGN_BUTTON_COLOR,
+        settings.RESIGN_BUTTON_TEXT_COLOR
+    )
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -74,6 +83,8 @@ def run_game():
                 # User clicked on something
                 if restart_button.contains_position(event.pos):
                     return run_game()
+                if resign_button.contains_position(event.pos):
+                    gui.utils.resign(game_info_window, chessboard)
                 if selected_piece_sprite:
                     gui.utils.cancel_highlighting_target_squares(target_squares)
                     # Clicked on potential target square
@@ -113,6 +124,7 @@ def run_game():
                 drag_in_progress = False
         pygame.display.flip()
         restart_button.draw(screen)
+        resign_button.draw(screen)
         chessboard.draw_board(screen)
         game_info_group.draw(screen)
     pygame.quit()

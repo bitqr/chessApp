@@ -26,6 +26,14 @@ class Game:
         self.captured_pieces[captured_piece.color][captured_piece.type] += 1
         position.add_captured_piece(captured_piece)
 
+    def apply_resign(self):
+        if self.board.position.color_to_move == Color.WHITE:
+            self.result = GameResult.BLACK_WINS_BY_RESIGNATION
+        else:
+            self.result = GameResult.WHITE_WINS_BY_RESIGNATION
+        for piece_key in self.board.position.legal_moves.keys():
+            self.board.position.legal_moves[piece_key] = []
+
     def to_string(self):
         result = 'Captured pieces:\nBlack:\n'
         for piece_type in self.captured_pieces[Color.WHITE]:
