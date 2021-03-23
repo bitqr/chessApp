@@ -56,6 +56,12 @@ class Position:
                 captured_piece = all_squares[item].content
                 self.pieces_positions.pop(captured_piece)
                 self.controlled_squares[captured_piece.color][captured_piece] = []
+            is_en_passant = piece.is_pawn() and square.file != item[1] and not is_capture
+            if is_en_passant:
+                captured_piece = all_squares[square.rank, item[1]].content
+                self.pieces_positions.pop(captured_piece)
+                self.controlled_squares[captured_piece.color][captured_piece] = []
+                all_squares[square.rank, item[1]].empty_content()
             # Fill the destination square
             all_squares[item].content = piece
             self.pieces_positions[piece] = all_squares[item]
@@ -74,6 +80,9 @@ class Position:
                 self.pieces_positions[captured_piece] = all_squares[item]
             else:
                 all_squares[item].empty_content()
+            if is_en_passant:
+                all_squares[square.rank, item[1]].content = captured_piece
+                self.pieces_positions[captured_piece] = all_squares[square.rank, item[1]]
             self.pieces_positions[piece] = square
             self.controlled_squares = original_controlled_squares
         return self.legal_moves[piece]

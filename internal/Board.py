@@ -80,10 +80,8 @@ class Board:
         self.position.latest_move = move
         self.game.move_history.append(move)
         self.position.color_to_move = move.piece.opposite_color()
-        # TODO: Consider the pawn promotion in legal moves
         self.position.update_controlled_squares(self.squares)
         self.position.update_legal_moves(self.squares)
-        ####################################################
         self.determine_check_situation(move)
         logging.info(move.to_string(target_piece))
 
