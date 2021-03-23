@@ -87,19 +87,33 @@ def king_squares(king, square, all_squares, position):
     return result
 
 
+def promotion_tuple(square_coordinates):
+    result = []
+    if square_coordinates[0] in [0, 7]:
+        # Pawn promotion
+        result.append((square_coordinates[0], square_coordinates[1], PieceType.KNIGHT))
+        result.append((square_coordinates[0], square_coordinates[1], PieceType.BISHOP))
+        result.append((square_coordinates[0], square_coordinates[1], PieceType.ROOK))
+        result.append((square_coordinates[0], square_coordinates[1], PieceType.QUEEN))
+    else:
+        result = [square_coordinates]
+    return result
+
+
 def pawn_squares(pawn, square, all_squares, latest_move):
     rank = square.rank + pawn.opponent_direction()
     if is_out_of_range(rank):
         return []
     result = []
     if all_squares[(rank, square.file)].is_free():
-        result.append((rank, square.file))
+        result.extend(promotion_tuple((rank, square.file)))
     if pawn.never_moved and all_squares[(rank + pawn.opponent_direction(), square.file)].is_free():
-        result.append((rank + pawn.opponent_direction(), square.file))
+        result.extend(promotion_tuple((rank + pawn.opponent_direction(), square.file)))
     if not is_out_of_range(square.file - 1) and all_squares[(rank, square.file - 1)].contains_opponent_piece(pawn):
-        result.append((rank, square.file - 1))
+        result.extend(promotion_tuple((rank, square.file - 1)))
     if not is_out_of_range(square.file + 1) and all_squares[(rank, square.file + 1)].contains_opponent_piece(pawn):
-        result.append((rank, square.file + 1))
+        result.extend(promotion_tuple((rank, square.file + 1)))
+
     # Look for En-Passant
     if latest_move:
         if not is_out_of_range(square.file + 1) \

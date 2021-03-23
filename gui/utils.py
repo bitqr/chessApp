@@ -38,7 +38,7 @@ def highlight_target_squares(chessboard, selected_piece_sprite):
     result = []
     square_sprite = chessboard.current_square_sprite(selected_piece_sprite)
     for coordinates in squares_coordinates:
-        sprite = chessboard.square_sprites[coordinates]
+        sprite = chessboard.square_sprites[coordinates[:2]]
         result.append(sprite)
         sprite.highlight()
     if len(squares_coordinates) == 0:

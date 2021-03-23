@@ -1,5 +1,6 @@
 from internal import utils
 from internal.Color import Color
+from internal.PieceType import PieceType
 
 
 class Position:
@@ -44,6 +45,7 @@ class Position:
             return self.legal_moves[piece]
         pseudo_legal_moves = self.compute_pseudo_legal_moves(piece, all_squares)
         for item in pseudo_legal_moves:
+            destination_square_coordinates = item[:2]
             original_controlled_squares = utils.dict_copy(self.controlled_squares)
             # Make the temporary move
             # Free the origin square
@@ -51,9 +53,9 @@ class Position:
             all_squares[(square.rank, square.file)].empty_content()
             # If it's a capture, remove the captured piece
             captured_piece = None
-            is_capture = not all_squares[item].is_free()
+            is_capture = not all_squares[destination_square_coordinates].is_free()
             if is_capture:
-                captured_piece = all_squares[item].content
+                captured_piece = all_squares[destination_square_coordinates].content
                 self.pieces_positions.pop(captured_piece)
                 self.controlled_squares[captured_piece.color][captured_piece] = []
             is_en_passant = piece.is_pawn() and square.file != item[1] and not is_capture
@@ -62,9 +64,12 @@ class Position:
                 self.pieces_positions.pop(captured_piece)
                 self.controlled_squares[captured_piece.color][captured_piece] = []
                 all_squares[square.rank, item[1]].empty_content()
+            is_pawn_promotion = len(item) == 3
+            if is_pawn_promotion:
+                piece.promote(item[2])
             # Fill the destination square
-            all_squares[item].content = piece
-            self.pieces_positions[piece] = all_squares[item]
+            all_squares[destination_square_coordinates].content = piece
+            self.pieces_positions[piece] = all_squares[destination_square_coordinates]
             # Update controlled squares
             self.update_controlled_squares(all_squares)
             # Find the king of the piece color and determine if it's in check
@@ -76,13 +81,15 @@ class Position:
             # Go back to previous position
             all_squares[(square.rank, square.file)].content = piece
             if is_capture:
-                all_squares[item].content = captured_piece
-                self.pieces_positions[captured_piece] = all_squares[item]
+                all_squares[destination_square_coordinates].content = captured_piece
+                self.pieces_positions[captured_piece] = all_squares[destination_square_coordinates]
             else:
-                all_squares[item].empty_content()
+                all_squares[destination_square_coordinates].empty_content()
             if is_en_passant:
                 all_squares[square.rank, item[1]].content = captured_piece
                 self.pieces_positions[captured_piece] = all_squares[square.rank, item[1]]
+            if is_pawn_promotion:
+                piece.type = PieceType.PAWN
             self.pieces_positions[piece] = square
             self.controlled_squares = original_controlled_squares
         return self.legal_moves[piece]
