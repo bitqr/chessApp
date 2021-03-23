@@ -4,7 +4,7 @@ from internal.Move import Move
 from internal.PieceType import PieceType
 
 KING_FILE = 4
-FILE_NAMES = ["a", "b", "c", "d", "e", "f", "g", "h"]
+CHESSBOARD_FILE_NAMES = ["a", "b", "c", "d", "e", "f", "g", "h"]
 game_result_to_string = {
     GameResult.WHITE_WINS_BY_CHECKMATE: "Checkmate! White wins!",
     GameResult.BLACK_WINS_BY_CHECKMATE: "Checkmate! Black wins!",

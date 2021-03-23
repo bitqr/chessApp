@@ -33,4 +33,4 @@ class Square:
         return not self.is_free() and self.content.color != piece.color and self.content.is_pawn()
 
     def to_string(self):
-        return '{0}{1}'.format(utils.FILE_NAMES[self.file], 8 - self.rank)
+        return '{0}{1}'.format(utils.CHESSBOARD_FILE_NAMES[self.file], 8 - self.rank)
