@@ -1,4 +1,4 @@
-from internal.util import *
+from internal.utils import *
 
 
 class Piece:

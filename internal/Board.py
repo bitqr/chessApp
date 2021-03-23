@@ -4,7 +4,7 @@ from internal.Color import Color
 from internal.Piece import Piece
 from internal.Position import Position
 from internal.Square import Square
-from internal.util import compute_castling_rook_move
+from internal.utils import compute_castling_rook_move
 
 
 class Board:

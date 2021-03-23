@@ -1,6 +1,6 @@
 from gui.SquareGUI import SquareGUI
 from gui.PieceGUI import PieceGUI
-from gui.util import *
+from gui.utils import *
 from pygame import sprite
 
 

@@ -1,4 +1,4 @@
-from internal import util
+from internal import utils
 from internal.Board import Board
 from internal.Color import Color
 from internal.GameResult import GameResult
@@ -32,14 +32,14 @@ class Game:
         for piece_type in self.captured_pieces[Color.WHITE]:
             count = self.captured_pieces[Color.WHITE][piece_type]
             if count > 0:
-                result += f'{util.piece_type_to_string(piece_type)} x {count}\n'
+                result += f'{utils.piece_type_to_string(piece_type)} x {count}\n'
         result += '-----------------------------------\n'
         result += 'White:\n'
         for piece_type in self.captured_pieces[Color.BLACK]:
             count = self.captured_pieces[Color.BLACK][piece_type]
             if count > 0:
-                result += f'{util.piece_type_to_string(piece_type)} x {count}\n'
+                result += f'{utils.piece_type_to_string(piece_type)} x {count}\n'
         result += '-----------------------------------\n'
         if self.is_over():
-            result += util.game_result_to_string[self.result]
+            result += utils.game_result_to_string[self.result]
         return result

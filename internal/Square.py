@@ -1,4 +1,4 @@
-from internal import util
+from internal import utils
 from internal.Piece import Piece
 from internal.PieceType import PieceType
 from internal.Color import Color
@@ -33,4 +33,4 @@ class Square:
         return not self.is_free() and self.content.color != piece.color and self.content.is_pawn()
 
     def to_string(self):
-        return f'{util.FILE_NAMES[self.file]}{8 - self.rank}'
+        return f'{utils.FILE_NAMES[self.file]}{8 - self.rank}'
