@@ -31,8 +31,7 @@ class Game:
             self.result = GameResult.BLACK_WINS_BY_RESIGNATION
         else:
             self.result = GameResult.WHITE_WINS_BY_RESIGNATION
-        for piece_key in self.board.position.legal_moves.keys():
-            self.board.position.legal_moves[piece_key] = []
+        self.end()
 
     def to_string(self):
         result = 'Captured pieces:\nBlack:\n'
@@ -49,3 +48,7 @@ class Game:
         if self.is_over():
             result += utils.game_result_to_string[self.result]
         return result
+
+    def end(self):
+        for piece_key in self.board.position.legal_moves.keys():
+            self.board.position.legal_moves[piece_key] = []

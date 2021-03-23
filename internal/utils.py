@@ -14,7 +14,8 @@ game_result_to_string = {
     GameResult.DRAW_BY_STALEMATE: "Draw by stalemate!",
     GameResult.DRAW_BY_MUTUAL_AGREEMENT: "Players agreed on a draw!",
     GameResult.WHITE_WINS_ON_TIME: "Time out for Black! White wins!",
-    GameResult.BLACK_WINS_ON_TIME: "Time out for White! Black wins!"
+    GameResult.BLACK_WINS_ON_TIME: "Time out for White! Black wins!",
+    GameResult.DRAW_BY_DEAD_POSITION: "Draw by dead position!"
 }
 
 

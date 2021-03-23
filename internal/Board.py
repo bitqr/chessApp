@@ -83,6 +83,11 @@ class Board:
         self.position.update_controlled_squares(self.squares)
         self.position.update_legal_moves(self.squares)
         self.determine_check_situation(move)
+        # Look for dead position
+        if not move.is_check and not self.game.is_over():
+            if self.position.is_dead_position():
+                self.game.result = GameResult.DRAW_BY_DEAD_POSITION
+                self.game.end()
         logging.info(move.to_string(target_piece))
 
     def determine_check_situation(self, move):
