@@ -1,3 +1,5 @@
+import logging
+
 from internal.GameResult import GameResult
 from internal.PieceType import PieceType
 from internal.Color import Color
@@ -5,6 +7,9 @@ from internal.Piece import Piece
 from internal.Position import Position
 from internal.Square import Square
 from internal.utils import compute_castling_rook_move
+
+
+logging.getLogger().setLevel(logging.INFO)
 
 
 class Board:
@@ -76,7 +81,7 @@ class Board:
         self.position.update_controlled_squares(self.squares)
         self.position.update_legal_moves(self.squares)
         self.determine_check_situation(move)
-        print(move.to_string(target_piece))
+        logging.info(move.to_string(target_piece))
 
     def determine_check_situation(self, move):
         remaining_moves = self.position.legal_moves_count()
