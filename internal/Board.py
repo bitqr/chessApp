@@ -79,6 +79,8 @@ class Board:
         move.piece.never_moved = False
         self.position.latest_move = move
         self.game.move_history.append(move)
+        self.update_fifty_move_rule_counter(move)
+        # Prepare next move
         self.position.color_to_move = move.piece.opposite_color()
         self.position.update_controlled_squares(self.squares)
         self.position.update_legal_moves(self.squares)
@@ -113,3 +115,11 @@ class Board:
     def put_piece_on_square(self, piece, rank, file):
         self.squares[(rank, file)].content = piece
         self.position.update_position(piece, self.squares[(rank, file)])
+
+    def update_fifty_move_rule_counter(self, move):
+        if move.is_pawn_move() or move.is_capture or move.is_en_passant:
+            self.game.fifty_move_rule_counter = 0
+        else:
+            self.game.fifty_move_rule_counter += 1
+        if self.game.fifty_move_rule_counter >= 50:
+            self.game.can_be_drawn_by_fifty_move_rule = True

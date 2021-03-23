@@ -40,6 +40,9 @@ class Move:
                and self.destination_square.rank == base_rank_index(self.piece.color) \
                and self.destination_square.file == castling_files[0]
 
+    def is_pawn_move(self):
+        return self.piece.is_pawn() or self.is_promotion
+
     def is_double_pawn_move(self):
         return self.piece.is_pawn() and abs(self.destination_square.rank - self.origin_square.rank) == 2
 
