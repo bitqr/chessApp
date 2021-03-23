@@ -16,6 +16,7 @@ class BoardGUI:
         self.square_sprites = dict()
         self.piece_sprites = dict()
         self.promotion_piece_groups = dict()
+        self.promotion_piece_sprites = dict()
         self.square_group = sprite.Group()
         self.piece_group = sprite.Group()
         self.dragging_group = sprite.Group()
@@ -41,19 +42,27 @@ class BoardGUI:
         # Add promotion sprites (4 piece sprites per color) to display only in pawn promotion position
         self.promotion_piece_groups[Color.WHITE] = pygame.sprite.Group()
         self.promotion_piece_groups[Color.BLACK] = pygame.sprite.Group()
-        self.promotion_piece_groups[Color.WHITE].add(self.create_piece(Piece(PieceType.KNIGHT, Color.WHITE), 9, 1))
-        self.promotion_piece_groups[Color.WHITE].add(self.create_piece(Piece(PieceType.BISHOP, Color.WHITE), 9, 3))
-        self.promotion_piece_groups[Color.WHITE].add(self.create_piece(Piece(PieceType.ROOK, Color.WHITE), 9, 5))
-        self.promotion_piece_groups[Color.WHITE].add(self.create_piece(Piece(PieceType.QUEEN, Color.WHITE), 9, 7))
-        self.promotion_piece_groups[Color.BLACK].add(self.create_piece(Piece(PieceType.KNIGHT, Color.BLACK), 9, 1))
-        self.promotion_piece_groups[Color.BLACK].add(self.create_piece(Piece(PieceType.BISHOP, Color.BLACK), 9, 3))
-        self.promotion_piece_groups[Color.BLACK].add(self.create_piece(Piece(PieceType.ROOK, Color.BLACK), 9, 5))
-        self.promotion_piece_groups[Color.BLACK].add(self.create_piece(Piece(PieceType.QUEEN, Color.BLACK), 9, 7))
+        self.promotion_piece_sprites[Color.WHITE] = []
+        self.promotion_piece_sprites[Color.BLACK] = []
+        self.promotion_piece_sprites[Color.WHITE].append(self.create_piece(Piece(PieceType.KNIGHT, Color.WHITE), 8, 1))
+        self.promotion_piece_sprites[Color.WHITE].append(self.create_piece(Piece(PieceType.BISHOP, Color.WHITE), 8, 3))
+        self.promotion_piece_sprites[Color.WHITE].append(self.create_piece(Piece(PieceType.ROOK, Color.WHITE), 8, 5))
+        self.promotion_piece_sprites[Color.WHITE].append(self.create_piece(Piece(PieceType.QUEEN, Color.WHITE), 8, 7))
+        self.promotion_piece_sprites[Color.BLACK].append(self.create_piece(Piece(PieceType.KNIGHT, Color.BLACK), 9, 1))
+        self.promotion_piece_sprites[Color.BLACK].append(self.create_piece(Piece(PieceType.BISHOP, Color.BLACK), 9, 3))
+        self.promotion_piece_sprites[Color.BLACK].append(self.create_piece(Piece(PieceType.ROOK, Color.BLACK), 9, 5))
+        self.promotion_piece_sprites[Color.BLACK].append(self.create_piece(Piece(PieceType.QUEEN, Color.BLACK), 9, 7))
+        for white_piece_sprite in self.promotion_piece_sprites[Color.WHITE]:
+            self.promotion_piece_groups[Color.WHITE].add(white_piece_sprite)
+        for black_piece_sprite in self.promotion_piece_sprites[Color.BLACK]:
+            self.promotion_piece_groups[Color.BLACK].add(black_piece_sprite)
 
     def draw_board(self, screen):
         # Draw squares before pieces
         self.square_group.draw(screen)
         self.piece_group.draw(screen)
+        self.promotion_piece_groups[Color.WHITE].draw(screen)
+        self.promotion_piece_groups[Color.BLACK].draw(screen)
         if len(self.dragging_group) > 0:
             dragged_piece = self.dragging_group.sprites()[0]
             if self.contains(dragged_piece):

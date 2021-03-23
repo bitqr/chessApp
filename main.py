@@ -80,7 +80,7 @@ def run_game():
                     for square_sprite in target_squares:
                         if square_sprite.rect.collidepoint(event.pos):
                             gui.utils.perform_move_on_board(
-                                screen, game_info_window, chessboard, selected_piece_sprite, square_sprite, event.pos
+                                game_info_window, chessboard, selected_piece_sprite, square_sprite, event.pos
                             )
                             break
                     chessboard.current_square_sprite(selected_piece_sprite).cancel_highlight()
@@ -107,7 +107,7 @@ def run_game():
                 # A piece is being released OR has just been selected by a left click
                 if drag_in_progress:
                     gui.utils.release_piece_after_drag_and_drop(
-                        screen, game_info_window, chessboard, selected_piece_sprite, target_squares, event.pos
+                        game_info_window, chessboard, selected_piece_sprite, target_squares, event.pos
                     )
                     selected_piece_sprite = None
                 drag_in_progress = False

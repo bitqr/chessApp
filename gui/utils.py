@@ -57,7 +57,6 @@ def cancel_highlighting_target_squares(square_sprites):
 
 
 def perform_move_on_board(
-        screen,
         game_info,
         chessboard,
         selected_piece_sprite,
@@ -72,7 +71,7 @@ def perform_move_on_board(
     move = Move(origin_square, selected_piece_sprite.piece, destination_square_sprite.square)
     piece_type = PieceType.NONE
     if move.is_promotion:
-        piece_type = run_pawn_promotion_selection(chessboard, move, screen)
+        piece_type = run_pawn_promotion_selection(chessboard, move)
         move.promoted_piece_type = piece_type
     latest_move = chessboard.board.position.latest_move
     chessboard.board.apply_move(move)
@@ -113,7 +112,6 @@ def end_drag_and_drop_move(chessboard, selected_piece_sprite):
 
 
 def release_piece_after_drag_and_drop(
-        screen,
         game_info,
         chessboard,
         selected_piece_sprite,
@@ -124,7 +122,7 @@ def release_piece_after_drag_and_drop(
     for square_sprite in target_squares:
         if square_sprite.rect.collidepoint(event_position):
             found_square = True
-            perform_move_on_board(screen, game_info, chessboard, selected_piece_sprite, square_sprite, event_position)
+            perform_move_on_board(game_info, chessboard, selected_piece_sprite, square_sprite, event_position)
             break
     if not found_square:
         end_drag_and_drop_move(chessboard, selected_piece_sprite)
@@ -158,17 +156,15 @@ def create_game_info_group(game):
     return game_info_window, game_info_window_group
 
 
-def run_pawn_promotion_selection(chessboard, move, screen):
+def run_pawn_promotion_selection(chessboard, move):
     run = True
     while run:
         pygame.display.flip()
-        promotion_piece_group = chessboard.promotion_piece_groups[move.piece.color]
-        promotion_piece_group.draw(screen)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                for promotion_piece_sprite in promotion_piece_group.sprites():
+                for promotion_piece_sprite in chessboard.promotion_piece_groups[move.piece.color].sprites():
                     if promotion_piece_sprite.rect.collidepoint(event.pos):
                         return promotion_piece_sprite.piece.type
