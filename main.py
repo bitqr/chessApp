@@ -11,7 +11,7 @@ from internal.Game import Game
 def open_main_menu(window):
     pygame.display.init()
     background_image = pygame.sprite.Sprite()
-    background_image.image = pygame.image.load("sprites/main_menu.jpeg").convert()
+    background_image.image = pygame.image.load("sprites/background.jpeg").convert()
     background_image.image = pygame.transform.scale(background_image.image,
                                                     [settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT])
     background_image.rect = background_image.image.get_rect()
@@ -49,7 +49,7 @@ def run_game():
     game = Game()
     game_info_window, game_info_group = gui.utils.create_game_info_group(game)
     chessboard = BoardGUI(game.board, settings.SQUARE_SIZE)
-    chessboard.initialize_board(game.board)
+    chessboard.initialize_board()
     pygame.display.init()
     run = True
     selected_piece_sprite = None
@@ -80,7 +80,7 @@ def run_game():
                     for square_sprite in target_squares:
                         if square_sprite.rect.collidepoint(event.pos):
                             gui.utils.perform_move_on_board(
-                                game_info_window, chessboard, selected_piece_sprite, square_sprite, event.pos
+                                screen, game_info_window, chessboard, selected_piece_sprite, square_sprite, event.pos
                             )
                             break
                     chessboard.current_square_sprite(selected_piece_sprite).cancel_highlight()
@@ -107,7 +107,7 @@ def run_game():
                 # A piece is being released OR has just been selected by a left click
                 if drag_in_progress:
                     gui.utils.release_piece_after_drag_and_drop(
-                        game_info_window, chessboard, selected_piece_sprite, target_squares, event.pos
+                        screen, game_info_window, chessboard, selected_piece_sprite, target_squares, event.pos
                     )
                     selected_piece_sprite = None
                 drag_in_progress = False

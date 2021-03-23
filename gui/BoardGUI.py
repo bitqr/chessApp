@@ -3,6 +3,8 @@ from gui.PieceGUI import PieceGUI
 from gui.utils import *
 from pygame import sprite
 
+from internal.Piece import Piece
+
 
 class BoardGUI:
 
@@ -13,6 +15,7 @@ class BoardGUI:
         self.piece_to_sprite = piece_to_sprite()
         self.square_sprites = dict()
         self.piece_sprites = dict()
+        self.promotion_piece_groups = dict()
         self.square_group = sprite.Group()
         self.piece_group = sprite.Group()
         self.dragging_group = sprite.Group()
@@ -20,18 +23,32 @@ class BoardGUI:
         self.board_height = board.size * square_size
         self.check_highlighted_square_sprite = None
 
-    def initialize_board(self, board):
-        for rank in range(board.size):
-            for file in range(board.size):
-                square = board.squares[(rank, file)]
+    def initialize_board(self):
+        for rank in range(self.board.size):
+            for file in range(self.board.size):
+                square = self.board.squares[(rank, file)]
                 square_sprite = self.create_square(square)
                 self.square_sprites[(square.rank, square.file)] = square_sprite
                 self.square_group.add(square_sprite)
                 if not square.is_free():
                     piece = square.content
-                    piece_sprite = self.create_piece(piece, board.position.pieces_positions[piece])
+                    piece_sprite = self.create_piece(piece, square.rank, square.file)
                     self.piece_sprites[piece] = piece_sprite
                     self.piece_group.add(piece_sprite)
+        self.initialize_pawn_promotion_sprites()
+
+    def initialize_pawn_promotion_sprites(self):
+        # Add promotion sprites (4 piece sprites per color) to display only in pawn promotion position
+        self.promotion_piece_groups[Color.WHITE] = pygame.sprite.Group()
+        self.promotion_piece_groups[Color.BLACK] = pygame.sprite.Group()
+        self.promotion_piece_groups[Color.WHITE].add(self.create_piece(Piece(PieceType.KNIGHT, Color.WHITE), 9, 1))
+        self.promotion_piece_groups[Color.WHITE].add(self.create_piece(Piece(PieceType.BISHOP, Color.WHITE), 9, 3))
+        self.promotion_piece_groups[Color.WHITE].add(self.create_piece(Piece(PieceType.ROOK, Color.WHITE), 9, 5))
+        self.promotion_piece_groups[Color.WHITE].add(self.create_piece(Piece(PieceType.QUEEN, Color.WHITE), 9, 7))
+        self.promotion_piece_groups[Color.BLACK].add(self.create_piece(Piece(PieceType.KNIGHT, Color.BLACK), 9, 1))
+        self.promotion_piece_groups[Color.BLACK].add(self.create_piece(Piece(PieceType.BISHOP, Color.BLACK), 9, 3))
+        self.promotion_piece_groups[Color.BLACK].add(self.create_piece(Piece(PieceType.ROOK, Color.BLACK), 9, 5))
+        self.promotion_piece_groups[Color.BLACK].add(self.create_piece(Piece(PieceType.QUEEN, Color.BLACK), 9, 7))
 
     def draw_board(self, screen):
         # Draw squares before pieces
@@ -49,12 +66,13 @@ class BoardGUI:
             'sprites/{0}.png'.format(self.square_to_sprite[square.get_color()])
         )
 
-    def create_piece(self, piece, location_square):
+    def create_piece(self, piece, rank, file):
         return PieceGUI(
             piece,
             self.square_size,
             'sprites/{0}.png'.format(self.piece_to_sprite[(piece.type, piece.color)]),
-            location_square
+            rank,
+            file
         )
 
     def current_square_sprite(self, piece_sprite):
