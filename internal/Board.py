@@ -1,5 +1,6 @@
 import logging
 
+from internal import utils
 from internal.GameResult import GameResult
 from internal.PieceType import PieceType
 from internal.Color import Color
@@ -81,6 +82,8 @@ class Board:
         self.game.move_history.append(move)
         self.update_fifty_move_rule_counter(move)
         # Prepare next move
+        if move.piece.is_black():
+            self.game.fullmoves_count += 1
         self.position.color_to_move = move.piece.opposite_color()
         self.position.update_controlled_squares(self.squares)
         self.position.update_legal_moves(self.squares)
@@ -91,6 +94,7 @@ class Board:
                 self.game.result = GameResult.DRAW_BY_DEAD_POSITION
                 self.game.end()
         logging.info(move.to_string(target_piece))
+        logging.info(self.to_fen_string())
 
     def determine_check_situation(self, move):
         remaining_moves = self.position.legal_moves_count()
@@ -121,5 +125,48 @@ class Board:
             self.game.fifty_move_rule_counter = 0
         else:
             self.game.fifty_move_rule_counter += 1
-        if self.game.fifty_move_rule_counter >= 50:
+        if self.game.fifty_move_rule_counter >= 100:
             self.game.can_be_drawn_by_fifty_move_rule = True
+
+    def to_fen_string(self):
+        result = ''
+        for rank in range(8):
+            empty_count = 0
+            for file in range(8):
+                if self.squares[(rank, file)].is_free():
+                    empty_count += 1
+                else:
+                    if empty_count > 0:
+                        result += str(empty_count)
+                        empty_count = 0
+                    piece = self.squares[(rank, file)].content
+                    result += piece.to_fen_letter()
+            if empty_count > 0:
+                result += str(empty_count)
+            if rank < 7:
+                result += '/'
+        result += ' {0} '.format(utils.color_to_fen(self.position.color_to_move))
+        # Castling rights
+        castling_rights_field = ''
+        if self.white_king.never_moved:
+            if self.squares[(7, 7)].content.is_rook() and self.squares[(7, 7)].content.never_moved:
+                castling_rights_field += 'K'
+            if self.squares[(7, 0)].content.is_rook() and self.squares[(7, 0)].content.never_moved:
+                castling_rights_field += 'Q'
+        if self.black_king.never_moved:
+            if self.squares[(0, 7)].content.is_rook() and self.squares[(0, 7)].content.never_moved:
+                castling_rights_field += 'k'
+            if self.squares[(0, 0)].content.is_rook() and self.squares[(0, 0)].content.never_moved:
+                castling_rights_field += 'q'
+        if castling_rights_field == '':
+            castling_rights_field = '-'
+        result += '{0} '.format(castling_rights_field)
+        # En passant square (if any)
+        latest_move = self.position.latest_move
+        if latest_move and latest_move.is_double_pawn_move:
+            en_passant_square_rank = (latest_move.origin_square.rank + latest_move.destination_square.rank) / 2
+            result += self.squares[(en_passant_square_rank, latest_move.origin_square.file)].to_string()
+        else:
+            result += '-'
+        result += ' {0} {1}'.format(self.game.fifty_move_rule_counter, self.game.fullmoves_count)
+        return result

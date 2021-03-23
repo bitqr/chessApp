@@ -20,6 +20,10 @@ game_result_to_string = {
 }
 
 
+def color_to_fen(color):
+    return 'w' if color == Color.WHITE else 'b'
+
+
 def piece_color_to_string(piece_color):
     return 'White' if piece_color == Color.WHITE else 'Black'
 

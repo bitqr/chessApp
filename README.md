@@ -10,5 +10,5 @@ Will contain:
 # Next Objectives:
 
 - Editor/Analysis Mode:
-   - FEN-notation reader
+   - FEN-notation reader & writer
    - Tests with public resources
