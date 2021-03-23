@@ -61,6 +61,9 @@ def perform_move_on_board(game_info, chessboard, selected_piece_sprite, square_s
         chessboard.check_highlighted_square_sprite = None
     origin_square = chessboard.current_square_sprite(selected_piece_sprite).square
     move = Move(origin_square, selected_piece_sprite.piece, square_sprite.square)
+    if move.is_promotion:
+        # TODO: Here, propose the choice to the player on the screen and send it to the move structure
+        pass
     latest_move = chessboard.board.position.latest_move
     chessboard.board.apply_move(move)
     if move.is_capture:

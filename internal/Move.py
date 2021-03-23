@@ -24,6 +24,8 @@ class Move:
         self.is_check = False
         self.is_capture = self.is_capture()
         self.is_en_passant = self.is_en_passant()
+        self.is_promotion = self.is_promotion()
+        self.promoted_piece_type = PieceType.NONE
 
     def is_capture(self):
         return not self.destination_square.is_free()
@@ -44,6 +46,11 @@ class Move:
     def is_en_passant(self):
         return self.piece.is_pawn() and not self.is_capture \
                and self.origin_square.file != self.destination_square.file
+
+    def is_promotion(self):
+        return self.piece.is_pawn() \
+               and ((self.piece.is_white() and self.destination_square.rank == 0)
+                    or (self.piece.is_black() and self.destination_square.rank == 7))
 
     def to_string(self, target_piece):
         delimiter = 'x' if target_piece.type != PieceType.NONE or self.is_en_passant else '_'
