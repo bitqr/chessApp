@@ -16,6 +16,7 @@ class Game:
         self.result = GameResult.UNDEFINED
         self.can_be_drawn_by_fifty_move_rule = False
         self.can_be_drawn_by_threefold_repetition = False
+        self.past_positions = dict()
 
     def initialize_captured_pieces(self):
         self.captured_pieces[Color.WHITE] = dict()
@@ -42,7 +43,7 @@ class Game:
             self.result = GameResult.DRAW_BY_50_MOVE_RULE
             self.end()
         if self.can_be_drawn_by_threefold_repetition:
-            self.result = GameResult.DRAW_BY_THREEFOLD_REPETITION
+            self.result = GameResult.DRAW_BY_MOVE_REPEAT
             self.end()
 
     def to_string(self):

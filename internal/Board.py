@@ -94,7 +94,16 @@ class Board:
                 self.game.result = GameResult.DRAW_BY_DEAD_POSITION
                 self.game.end()
         logging.info(move.to_string(target_piece))
-        logging.info(self.to_fen_string())
+        # Look for threefold repetition
+        self.update_repetition_status()
+
+    def update_repetition_status(self):
+        fen_string = self.to_fen_string()
+        fen_key = ' '.join(fen_string.split(' ')[:4])
+        self.game.past_positions[fen_key] = self.game.past_positions.get(fen_key, 0) + 1
+        if self.game.past_positions[fen_key] >= 3:
+            self.game.can_be_drawn_by_threefold_repetition = True
+        logging.info(fen_string)
 
     def determine_check_situation(self, move):
         remaining_moves = self.position.legal_moves_count()
