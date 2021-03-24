@@ -9,9 +9,8 @@ Will contain:
 
 # Next Objectives:
 
-- Editor mode, with possibility to enter a position in FEN format and play it
+- Test legal moves at given depth
 
 - Zero-knowledge chess engine
     - Start with a "stupid" random player
     - Do be more clever
-    

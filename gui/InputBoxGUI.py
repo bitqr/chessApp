@@ -29,9 +29,7 @@ class InputBoxGUI(ButtonGUI):
         if event.type == pygame.KEYDOWN:
             if self.active:
                 keys = pygame.key.get_pressed()
-                if event.key == pygame.K_RETURN:
-                    return
-                elif event.key == pygame.K_BACKSPACE:
+                if event.key == pygame.K_BACKSPACE:
                     self.text = self.text[:-1]
                 else:
                     if keys[pygame.K_LCTRL] and keys[pygame.K_v]:

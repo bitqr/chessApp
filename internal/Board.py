@@ -20,12 +20,12 @@ class Board:
         self.game = game
         self.squares = dict()
         self.size = size
-        self.position = Position()
         for rank in range(size):
             for file in range(size):
                 self.squares[(rank, file)] = Square(rank, file)
         self.white_king = Piece(PieceType.KING, Color.WHITE)
         self.black_king = Piece(PieceType.KING, Color.BLACK)
+        self.position = Position(self.squares)
         if initial_fen_position != '':
             self.initialize_board_from_fen_string(initial_fen_position)
         else:
@@ -34,8 +34,8 @@ class Board:
     def initialize_board(self):
         self.initialize_side(Color.WHITE)
         self.initialize_side(Color.BLACK)
-        self.position.update_controlled_squares(self.squares)
-        self.position.update_legal_moves(self.squares)
+        self.position.update_controlled_squares()
+        self.position.update_legal_moves()
         self.position.color_to_move = Color.WHITE
 
     def initialize_side(self, piece_color):
@@ -89,8 +89,8 @@ class Board:
         if move.piece.is_black():
             self.game.fullmoves_count += 1
         self.position.color_to_move = move.piece.opposite_color()
-        self.position.update_controlled_squares(self.squares)
-        self.position.update_legal_moves(self.squares)
+        self.position.update_controlled_squares()
+        self.position.update_legal_moves()
         self.determine_check_situation(move)
         # Look for dead position
         if not move.is_check and not self.game.is_over():
@@ -186,16 +186,14 @@ class Board:
 
     def initialize_board_from_fen_string(self, fen_string):
         fen_fields = fen_string.split(' ')
-        if len(fen_fields) != 6:
-            return
         self.read_fen_field_square_contents(fen_fields[0])
         self.position.color_to_move = utils.fen_letter_to_color(fen_fields[1])
         self.read_fen_field_castling_rights(fen_fields[2])
         self.read_fen_field_en_passant_square(fen_fields[3])
         self.game.fifty_move_rule_counter = int(fen_fields[4])
         self.game.fullmoves_count = int(fen_fields[5])
-        self.position.update_controlled_squares(self.squares)
-        self.position.update_legal_moves(self.squares)
+        self.position.update_controlled_squares()
+        self.position.update_legal_moves()
 
     def read_fen_field_square_contents(self, field):
         ranks = field.split('/')
