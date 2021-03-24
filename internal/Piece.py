@@ -1,4 +1,6 @@
-from internal.utils import *
+from internal.Color import Color
+from internal.PieceType import PieceType
+from internal.utils import piece_color_to_string, piece_type_to_string
 
 
 class Piece:

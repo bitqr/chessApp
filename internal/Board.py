@@ -2,6 +2,7 @@ import logging
 
 from internal import utils
 from internal.GameResult import GameResult
+from internal.Move import Move
 from internal.PieceType import PieceType
 from internal.Color import Color
 from internal.Piece import Piece
@@ -179,3 +180,58 @@ class Board:
             result += '-'
         result += ' {0} {1}'.format(self.game.fifty_move_rule_counter, self.game.fullmoves_count)
         return result
+
+    def initialize_board_from_fen_string(self, fen_string):
+        fen_fields = fen_string.split(' ')
+        self.read_fen_field_square_contents(fen_fields[0])
+        self.position.color_to_move = utils.fen_letter_to_color(fen_fields[1])
+        self.read_fen_field_castling_rights(fen_fields[2])
+        self.read_fen_field_en_passant_square(fen_fields[3])
+        self.game.fifty_move_rule_counter = int(fen_fields[4])
+        self.game.fullmoves_count = int(fen_fields[5])
+        self.position.update_controlled_squares(self.squares)
+        self.position.update_legal_moves(self.squares)
+
+    def read_fen_field_square_contents(self, field):
+        ranks = field.split('/')
+        rank_index = 0
+        for rank in ranks:
+            file_index = 0
+            for character in rank:
+                if character.isnumeric():
+                    file_index += int(character)
+                else:
+                    piece_type, piece_color = utils.fen_letter_to_piece(character)
+                    piece = Piece(piece_type, piece_color)
+                    if character == 'K':
+                        piece = self.white_king
+                    elif character == 'k':
+                        piece = self.black_king
+                    self.squares[(rank_index, file_index)].content = piece
+                    self.position.pieces_positions[piece] = self.squares[(rank_index, file_index)]
+                    if (rank_index, file_index) not in utils.initial_piece_positions(piece):
+                        piece.never_moved = False
+                    file_index += 1
+            rank_index += 1
+
+    def read_fen_field_castling_rights(self, field):
+        if len(field) < 4:
+            if 'KQ' not in field and self.squares[(7, 4)].content.is_king():
+                self.squares[(7, 4)].content.never_moved = False
+            elif 'K' not in field and self.squares[(7, 7)].content.is_rook():
+                self.squares[(7, 7)].content.never_moved = False
+            elif 'Q' not in field and self.squares[(7, 0)].content.is_rook():
+                self.squares[(7, 0)].content.never_moved = False
+            if 'kq' not in field and self.squares[(0, 4)].content.is_king():
+                self.squares[(0, 4)].content.never_moved = False
+            elif 'k' not in field and self.squares[(0, 7)].content.is_rook():
+                self.squares[(0, 7)].content.never_moved = False
+            elif 'q' not in field and self.squares[(0, 0)].content.is_rook():
+                self.squares[(0, 0)].content.never_moved = False
+
+    def read_fen_field_en_passant_square(self, field):
+        if field != '-':
+            rank, file = utils.string_to_square_coordinates(field)
+            origin_square = self.squares[(1, file) if rank == 2 else (6, file)]
+            destination_square = self.squares[(3, file) if rank == 2 else (4, file)]
+            self.position.latest_move = Move(origin_square, destination_square.content, destination_square)
