@@ -388,3 +388,7 @@ def dict_copy(target):
         for piece_key in target[color_key].keys():
             result[color_key][piece_key] = target[color_key][piece_key]
     return result
+
+
+def is_valid_fen(fen_string):
+    return len(fen_string.split(' ')) == 6

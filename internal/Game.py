@@ -6,12 +6,12 @@ from internal.GameResult import GameResult
 
 class Game:
 
-    def __init__(self):
+    def __init__(self, initial_fen_position=''):
         self.move_history = []
         self.captured_pieces = dict()
         self.fifty_move_rule_counter = 0
         self.fullmoves_count = 1
-        self.board = Board(8, self)
+        self.board = Board(8, self, initial_fen_position)
         self.initialize_captured_pieces()
         self.result = GameResult.UNDEFINED
         self.can_be_drawn_by_fifty_move_rule = False

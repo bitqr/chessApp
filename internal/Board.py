@@ -16,7 +16,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 class Board:
 
-    def __init__(self, size, game):
+    def __init__(self, size, game, initial_fen_position=''):
         self.game = game
         self.squares = dict()
         self.size = size
@@ -26,7 +26,10 @@ class Board:
                 self.squares[(rank, file)] = Square(rank, file)
         self.white_king = Piece(PieceType.KING, Color.WHITE)
         self.black_king = Piece(PieceType.KING, Color.BLACK)
-        self.initialize_board()
+        if initial_fen_position != '':
+            self.initialize_board_from_fen_string(initial_fen_position)
+        else:
+            self.initialize_board()
 
     def initialize_board(self):
         self.initialize_side(Color.WHITE)
@@ -183,6 +186,8 @@ class Board:
 
     def initialize_board_from_fen_string(self, fen_string):
         fen_fields = fen_string.split(' ')
+        if len(fen_fields) != 6:
+            return
         self.read_fen_field_square_contents(fen_fields[0])
         self.position.color_to_move = utils.fen_letter_to_color(fen_fields[1])
         self.read_fen_field_castling_rights(fen_fields[2])
