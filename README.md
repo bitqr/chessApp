@@ -9,6 +9,9 @@ Will contain:
 
 # Next Objectives:
 
-- Editor/Analysis Mode:
-   - FEN-notation reader
-   - Tests with public resources
+- Editor mode, with possibility to enter a position in FEN format and play it
+
+- Zero-knowledge chess engine
+    - Start with a "stupid" random player
+    - Do be more clever
+    

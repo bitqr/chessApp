@@ -20,8 +20,40 @@ game_result_to_string = {
 }
 
 
+def color_to_fen(color):
+    return 'w' if color == Color.WHITE else 'b'
+
+
+def fen_letter_to_color(letter):
+    return Color.WHITE if letter == 'w' else Color.BLACK
+
+
 def piece_color_to_string(piece_color):
     return 'White' if piece_color == Color.WHITE else 'Black'
+
+
+def string_to_square_coordinates(square_string):
+    rank = int(square_string[1]) - 1
+    file = CHESSBOARD_FILE_NAMES.index(square_string[0])
+    return rank, file
+
+
+def fen_letter_to_piece(letter):
+    piece_type = PieceType.NONE
+    piece_color = Color.WHITE if letter.isupper() else Color.BLACK
+    if letter.lower() == 'p':
+        piece_type = PieceType.PAWN
+    if letter.lower() == 'k':
+        piece_type = PieceType.KING
+    if letter.lower() == 'r':
+        piece_type = PieceType.ROOK
+    if letter.lower() == 'n':
+        piece_type = PieceType.KNIGHT
+    if letter.lower() == 'b':
+        piece_type = PieceType.BISHOP
+    if letter.lower() == 'q':
+        piece_type = PieceType.QUEEN
+    return piece_type, piece_color
 
 
 def compute_castling_rook_move(move, squares):
@@ -55,6 +87,30 @@ def is_out_of_range(rank):
 
 def is_out_of_board(rank, file):
     return is_out_of_range(rank) or is_out_of_range(file)
+
+
+def initial_piece_positions(piece):
+    result = []
+    base_rank = 0 if piece.is_black() else 7
+    pawn_rank = 1 if piece.is_black else 6
+    if piece.is_pawn():
+        for file in range(8):
+            result.append((pawn_rank, file))
+        return result
+    if piece.is_bishop():
+        result.append((base_rank, 2))
+        result.append((base_rank, 5))
+    if piece.is_knight():
+        result.append((base_rank, 1))
+        result.append((base_rank, 6))
+    if piece.is_rook():
+        result.append((base_rank, 0))
+        result.append((base_rank, 7))
+    if piece.is_queen():
+        return [(base_rank, 3)]
+    if piece.is_knight:
+        return [(base_rank, 4)]
+    return result
 
 
 def king_squares(king, square, all_squares, position):

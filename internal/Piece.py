@@ -1,4 +1,6 @@
-from internal.utils import *
+from internal.Color import Color
+from internal.PieceType import PieceType
+from internal.utils import piece_color_to_string, piece_type_to_string
 
 
 class Piece:
@@ -43,3 +45,20 @@ class Piece:
 
     def to_string(self):
         return '{0}: {1}'.format(piece_color_to_string(self.color), piece_type_to_string(self.type))
+
+    def to_fen_letter(self):
+        letter = 'P'
+        if self.type == PieceType.KNIGHT:
+            letter = 'N'
+        elif self.type == PieceType.BISHOP:
+            letter = 'B'
+        elif self.type == PieceType.ROOK:
+            letter = 'R'
+        elif self.type == PieceType.QUEEN:
+            letter = 'Q'
+        elif self.type == PieceType.KING:
+            letter = 'K'
+        if self.color == Color.WHITE:
+            return letter
+        else:
+            return letter.lower()
