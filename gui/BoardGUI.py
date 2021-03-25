@@ -101,3 +101,6 @@ class BoardGUI:
 
     def contains(self, piece_sprite):
         return piece_sprite.rect.bottom <= self.board_width and piece_sprite.rect.right - 10 <= self.board_height
+
+    def is_captured_piece(self, piece_sprite):
+        return piece_sprite.piece not in self.board.position.pieces_positions.keys()

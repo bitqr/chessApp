@@ -1,3 +1,4 @@
+from engine.RandomEngine import RandomEngine
 from internal import utils
 from internal.Board import Board
 from internal.Color import Color
@@ -17,6 +18,7 @@ class Game:
         self.can_be_drawn_by_fifty_move_rule = False
         self.can_be_drawn_by_threefold_repetition = False
         self.past_positions = dict()
+        self.engine = RandomEngine()
 
     def initialize_captured_pieces(self):
         self.captured_pieces[Color.WHITE] = dict()
