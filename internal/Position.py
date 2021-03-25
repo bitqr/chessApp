@@ -166,5 +166,9 @@ class Position:
         for piece in self.legal_moves.keys():
             if piece.color == self.color_to_move:
                 for item in self.legal_moves[piece]:
-                    result.append(Move(self.pieces_positions[piece], piece, self.squares[item[:2]]))
+                    move = Move(self.pieces_positions[piece], piece, self.squares[item[:2]])
+                    if len(item) == 3:
+                        # This move is a pawn promotion
+                        move.promoted_piece_type = item[2]
+                    result.append(move)
         return result

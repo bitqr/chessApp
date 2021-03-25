@@ -16,6 +16,7 @@ class SquareGUI(pygame.sprite.Sprite):
         self.image = self.normal_image
         self.rect = self.normal_rect
         self.is_in_check = False
+        self.is_in_latest_move = False
 
     def highlight(self):
         if not self.is_in_check:
@@ -25,10 +26,13 @@ class SquareGUI(pygame.sprite.Sprite):
     def cancel_highlight(self):
         if not self.is_in_check:
             self.image = self.normal_image
+        if self.is_in_latest_move:
+            self.highlight_latest_move()
 
     def un_highlight(self):
         self.image = self.normal_image
         self.is_in_check = False
+        self.is_in_latest_move = False
 
     def is_free(self):
         return self.square.is_free()
@@ -42,3 +46,8 @@ class SquareGUI(pygame.sprite.Sprite):
         self.highlighted_image.fill(settings.CHECKED_KING_COLOR)
         self.image = self.highlighted_image
         self.is_in_check = True
+
+    def highlight_latest_move(self):
+        self.highlighted_image.fill(settings.LATEST_MOVE_COLOR)
+        self.image = self.highlighted_image
+        self.is_in_latest_move = True

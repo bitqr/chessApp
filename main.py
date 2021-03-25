@@ -184,7 +184,12 @@ def run_game(initial_fen_position='', player_color=None):
                     for square_sprite in target_squares:
                         if square_sprite.rect.collidepoint(event.pos):
                             utils.perform_move_on_board(
-                                game_info_window, chessboard, selected_piece_sprite, square_sprite, player_color
+                                game_info_window,
+                                chessboard,
+                                selected_piece_sprite,
+                                square_sprite,
+                                player_color,
+                                chessboard.board.position.latest_move
                             )
                             break
                     # Re-capture: When playing an engine, the responding move may have re-captured the piece
