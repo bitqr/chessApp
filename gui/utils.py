@@ -70,7 +70,8 @@ def perform_move_on_board(
         game_info,
         chessboard,
         selected_piece_sprite,
-        destination_square_sprite
+        destination_square_sprite,
+        player_color
 ):
     # First, remove check highlighted square
     if chessboard.check_highlighted_square_sprite:
@@ -110,17 +111,16 @@ def perform_move_on_board(
     game_info.update_text()
     end_drag_and_drop_move(chessboard, selected_piece_sprite)
     # Perform engine move
-    if not chessboard.board.game.is_over():
-        perform_engine_move(chessboard, game_info, move.piece.color)
+    if not chessboard.board.game.is_over() and move.piece.color == player_color:
+        perform_engine_move(chessboard, game_info, player_color)
 
 
-def perform_engine_move(chessboard, game_info, color_to_move):
-    if color_to_move == Color.WHITE:
-        engine_move = chessboard.board.game.engine.choose_move(chessboard.board.position)
-        selected_piece_sprite = chessboard.piece_sprites[engine_move.piece]
-        destination_square_sprite = \
-            chessboard.square_sprites[(engine_move.destination_square.rank, engine_move.destination_square.file)]
-        perform_move_on_board(game_info, chessboard, selected_piece_sprite, destination_square_sprite)
+def perform_engine_move(chessboard, game_info, player_color):
+    engine_move = chessboard.board.game.engine.choose_move(chessboard.board.position)
+    selected_piece_sprite = chessboard.piece_sprites[engine_move.piece]
+    destination_square_sprite = \
+        chessboard.square_sprites[(engine_move.destination_square.rank, engine_move.destination_square.file)]
+    perform_move_on_board(game_info, chessboard, selected_piece_sprite, destination_square_sprite, player_color)
 
 
 def end_drag_and_drop_move(chessboard, selected_piece_sprite):
@@ -134,13 +134,14 @@ def release_piece_after_drag_and_drop(
         chessboard,
         selected_piece_sprite,
         target_squares,
-        event_position
+        event_position,
+        player_color
 ):
     found_square = False
     for square_sprite in target_squares:
         if square_sprite.rect.collidepoint(event_position):
             found_square = True
-            perform_move_on_board(game_info, chessboard, selected_piece_sprite, square_sprite)
+            perform_move_on_board(game_info, chessboard, selected_piece_sprite, square_sprite, player_color)
             break
     if not found_square:
         end_drag_and_drop_move(chessboard, selected_piece_sprite)

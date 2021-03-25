@@ -9,8 +9,8 @@ Will contain:
 
 # Next Objectives:
 
-- Test legal moves at given depth
+- Play against engine workflow:
+  - highlight the latest engine move on the board
 
 - Zero-knowledge chess engine
-    - Start with a "stupid" random player
     - Do be more clever

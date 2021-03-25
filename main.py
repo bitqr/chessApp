@@ -66,9 +66,7 @@ def open_main_menu(window):
                 run = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if start_game_button.contains_position(event.pos):
-                    screen.fill(settings.CLEAR_SCREEN_COLOR)
-                    background_group.draw(window)
-                    return run_game()
+                    return run_color_choice(window, background_group)
                 if editor_mode_button.contains_position(event.pos):
                     screen.fill(settings.CLEAR_SCREEN_COLOR)
                     background_group.draw(window)
@@ -85,7 +83,47 @@ def open_main_menu(window):
     sys.exit()
 
 
-def run_game(initial_fen_position=''):
+def run_color_choice(window, background_group):
+    play_with_white_button = ButtonGUI(
+        settings.PLAY_WITH_WHITE_BUTTON_TOP_LEFT_X,
+        settings.PLAY_WITH_WHITE_BUTTON_TOP_LEFT_Y,
+        settings.PLAY_WITH_WHITE_BUTTON_WIDTH,
+        settings.PLAY_WITH_WHITE_BUTTON_HEIGHT,
+        settings.PLAY_WITH_WHITE_BUTTON_TEXT,
+        settings.PLAY_WITH_WHITE_BUTTON_COLOR,
+        settings.PLAY_WITH_WHITE_BUTTON_TEXT_COLOR
+    )
+    play_with_black_button = ButtonGUI(
+        settings.PLAY_WITH_BLACK_BUTTON_TOP_LEFT_X,
+        settings.PLAY_WITH_BLACK_BUTTON_TOP_LEFT_Y,
+        settings.PLAY_WITH_BLACK_BUTTON_WIDTH,
+        settings.PLAY_WITH_BLACK_BUTTON_HEIGHT,
+        settings.PLAY_WITH_BLACK_BUTTON_TEXT,
+        settings.PLAY_WITH_BLACK_BUTTON_COLOR,
+        settings.PLAY_WITH_BLACK_BUTTON_TEXT_COLOR
+    )
+    screen.fill(settings.CLEAR_SCREEN_COLOR)
+    background_group.draw(window)
+    play_with_white_button.draw(window)
+    play_with_black_button.draw(window)
+    while True:
+        pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if play_with_white_button.contains_position(event.pos):
+                    screen.fill(settings.CLEAR_SCREEN_COLOR)
+                    background_group.draw(window)
+                    return run_game('', Color.WHITE)
+                if play_with_black_button.contains_position(event.pos):
+                    screen.fill(settings.CLEAR_SCREEN_COLOR)
+                    background_group.draw(window)
+                    return run_game('', Color.BLACK)
+
+
+def run_game(initial_fen_position='', player_color=None):
     game = Game(initial_fen_position)
     game_info_window, game_info_group = utils.create_game_info_group(game)
     chessboard = BoardGUI(game.board, settings.SQUARE_SIZE)
@@ -123,6 +161,8 @@ def run_game(initial_fen_position=''):
         settings.DRAW_BUTTON_COLOR,
         settings.DRAW_BUTTON_TEXT_COLOR
     )
+    if player_color == Color.BLACK:
+        utils.perform_engine_move(chessboard, game_info_window, player_color)
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -134,7 +174,7 @@ def run_game(initial_fen_position=''):
                     if chessboard.board.game.can_be_drawn():
                         utils.draw_game(game_info_window, chessboard)
                 if restart_button.contains_position(event.pos):
-                    return run_game()
+                    return run_game('', player_color)
                 if resign_button.contains_position(event.pos):
                     if not chessboard.board.game.is_over():
                         utils.resign(game_info_window, chessboard)
@@ -144,7 +184,7 @@ def run_game(initial_fen_position=''):
                     for square_sprite in target_squares:
                         if square_sprite.rect.collidepoint(event.pos):
                             utils.perform_move_on_board(
-                                game_info_window, chessboard, selected_piece_sprite, square_sprite
+                                game_info_window, chessboard, selected_piece_sprite, square_sprite, player_color
                             )
                             break
                     # Re-capture: When playing an engine, the responding move may have re-captured the piece
@@ -173,7 +213,7 @@ def run_game(initial_fen_position=''):
                 # A piece is being released OR has just been selected by a left click
                 if drag_in_progress:
                     utils.release_piece_after_drag_and_drop(
-                        game_info_window, chessboard, selected_piece_sprite, target_squares, event.pos
+                        game_info_window, chessboard, selected_piece_sprite, target_squares, event.pos, player_color
                     )
                     selected_piece_sprite = None
                 drag_in_progress = False
