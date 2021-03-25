@@ -144,10 +144,12 @@ def run_game(initial_fen_position=''):
                     for square_sprite in target_squares:
                         if square_sprite.rect.collidepoint(event.pos):
                             utils.perform_move_on_board(
-                                game_info_window, chessboard, selected_piece_sprite, square_sprite, event.pos
+                                game_info_window, chessboard, selected_piece_sprite, square_sprite
                             )
                             break
-                    chessboard.current_square_sprite(selected_piece_sprite).cancel_highlight()
+                    # Re-capture: When playing an engine, the responding move may have re-captured the piece
+                    if not chessboard.is_captured_piece(selected_piece_sprite):
+                        chessboard.current_square_sprite(selected_piece_sprite).cancel_highlight()
                     selected_piece_sprite = None
                 else:
                     # 1st click for a move

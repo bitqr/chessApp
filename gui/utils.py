@@ -70,8 +70,7 @@ def perform_move_on_board(
         game_info,
         chessboard,
         selected_piece_sprite,
-        destination_square_sprite,
-        event_position
+        destination_square_sprite
 ):
     # First, remove check highlighted square
     if chessboard.check_highlighted_square_sprite:
@@ -84,14 +83,11 @@ def perform_move_on_board(
         piece_type = run_pawn_promotion_selection(chessboard, move)
         move.promoted_piece_type = piece_type
     latest_move = chessboard.board.position.latest_move
-    chessboard.board.apply_move(move)
     if move.is_capture:
-        # Look for the captured piece sprite and delete it
-        for piece_sprite in chessboard.piece_group.sprites():
-            if piece_sprite != selected_piece_sprite \
-                    and piece_sprite.rect.collidepoint(event_position):
-                chessboard.piece_group.remove(piece_sprite)
-                break
+        piece_to_remove = destination_square_sprite.square.content
+        piece_to_remove_sprite = chessboard.piece_sprites[piece_to_remove]
+        chessboard.piece_group.remove(piece_to_remove_sprite)
+    chessboard.board.apply_move(move)
     if move.is_castle:
         # Also move the additional rook on the board
         rook = \
@@ -113,6 +109,18 @@ def perform_move_on_board(
         chessboard.check_highlighted_square_sprite = checked_king_current_square_sprite
     game_info.update_text()
     end_drag_and_drop_move(chessboard, selected_piece_sprite)
+    # Perform engine move
+    if not chessboard.board.game.is_over():
+        perform_engine_move(chessboard, game_info, move.piece.color)
+
+
+def perform_engine_move(chessboard, game_info, color_to_move):
+    if color_to_move == Color.WHITE:
+        engine_move = chessboard.board.game.engine.choose_move(chessboard.board.position)
+        selected_piece_sprite = chessboard.piece_sprites[engine_move.piece]
+        destination_square_sprite = \
+            chessboard.square_sprites[(engine_move.destination_square.rank, engine_move.destination_square.file)]
+        perform_move_on_board(game_info, chessboard, selected_piece_sprite, destination_square_sprite)
 
 
 def end_drag_and_drop_move(chessboard, selected_piece_sprite):
@@ -132,7 +140,7 @@ def release_piece_after_drag_and_drop(
     for square_sprite in target_squares:
         if square_sprite.rect.collidepoint(event_position):
             found_square = True
-            perform_move_on_board(game_info, chessboard, selected_piece_sprite, square_sprite, event_position)
+            perform_move_on_board(game_info, chessboard, selected_piece_sprite, square_sprite)
             break
     if not found_square:
         end_drag_and_drop_move(chessboard, selected_piece_sprite)
