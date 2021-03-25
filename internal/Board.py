@@ -110,7 +110,7 @@ class Board:
         logging.info(fen_string)
 
     def determine_check_situation(self, move):
-        remaining_moves = self.position.legal_moves_count()
+        remaining_moves = len(self.position.legal_moves_list())
         # print(remaining_moves)
         if move.piece.is_white():
             if self.position.is_in_check(self.black_king):

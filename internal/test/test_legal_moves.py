@@ -29,8 +29,9 @@ def moves_count():
 def test_legal_moves():
     for item in list(zip(positions(), moves_count())):
         game = Game(item[0])
-        print('count = {0} vs {1} expected'.format(game.board.position.legal_moves_count(), item[1]))
-        assert game.board.position.legal_moves_count() == item[1]
+        legal_moves_count = len(game.board.position.legal_moves_list())
+        print('count = {0} vs {1} expected'.format(legal_moves_count, item[1]))
+        assert legal_moves_count == item[1]
 
 
 test_legal_moves()

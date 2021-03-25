@@ -1,5 +1,6 @@
 from internal import utils
 from internal.Color import Color
+from internal.Move import Move
 from internal.PieceType import PieceType
 
 
@@ -160,9 +161,10 @@ class Position:
         king_square = self.pieces_positions[king]
         return self.is_controlled(king_square.rank, king_square.file, king.opposite_color())
 
-    def legal_moves_count(self):
-        result = 0
+    def legal_moves_list(self):
+        result = []
         for piece in self.legal_moves.keys():
             if piece.color == self.color_to_move:
-                result += len(self.legal_moves[piece])
+                for item in self.legal_moves[piece]:
+                    result.append(Move(self.pieces_positions[piece], piece, self.squares[item[:2]]))
         return result
