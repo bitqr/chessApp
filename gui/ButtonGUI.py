@@ -5,7 +5,7 @@ from gui import settings
 
 class ButtonGUI:
 
-    def __init__(self, top_left_x, top_left_y, width, height, text="", color=None, text_color=None):
+    def __init__(self, top_left_x, top_left_y, width, height, text='', color=None, text_color=None):
         self.top_left_x = top_left_x
         self.top_left_y = top_left_y
         self.width = width

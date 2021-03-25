@@ -178,3 +178,18 @@ def run_pawn_promotion_selection(chessboard, move):
                 for promotion_piece_sprite in chessboard.promotion_piece_groups[move.piece.color].sprites():
                     if promotion_piece_sprite.rect.collidepoint(event.pos):
                         return promotion_piece_sprite.piece.type
+
+
+def enter_fen_string(window, input_box):
+    run = True
+    while run:
+        pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                return input_box.text
+            input_box.handle_event(event)
+            input_box.update()
+            input_box.draw(window)

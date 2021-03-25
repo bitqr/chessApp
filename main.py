@@ -1,10 +1,11 @@
-from gui import settings
+from gui import utils
+from internal.utils import *
 from gui.ButtonGUI import ButtonGUI
-from gui.BoardGUI import BoardGUI
-import gui.utils
+from gui.BoardGUI import BoardGUI, settings
 import pygame
 import sys
 
+from gui.InputBoxGUI import InputBoxGUI
 from internal.Game import Game
 
 
@@ -27,12 +28,39 @@ def open_main_menu(window):
         settings.START_BUTTON_COLOR,
         settings.START_BUTTON_TEXT_COLOR
     )
+    editor_mode_button = ButtonGUI(
+        settings.EDITOR_BUTTON_TOP_LEFT_X,
+        settings.EDITOR_BUTTON_TOP_LEFT_Y,
+        settings.EDITOR_BUTTON_WIDTH,
+        settings.EDITOR_BUTTON_HEIGHT,
+        settings.EDITOR_BUTTON_TEXT,
+        settings.EDITOR_BUTTON_COLOR,
+        settings.EDITOR_BUTTON_TEXT_COLOR
+    )
+    fen_string_input_box = InputBoxGUI(
+        settings.INPUT_BOX_TOP_LEFT_X,
+        settings.INPUT_BOX_TOP_LEFT_Y,
+        settings.INPUT_BOX_WIDTH,
+        settings.INPUT_BOX_HEIGHT,
+        settings.INPUT_BOX_COLOR,
+        settings.INPUT_BOX_TEXT_COLOR
+    )
+    input_box_intro_text = ButtonGUI(
+        settings.INPUT_BOX_INTRO_TEXT_TOP_LEFT_X,
+        settings.INPUT_BOX_INTRO_TEXT_TOP_LEFT_Y,
+        settings.INPUT_BOX_INTRO_TEXT_WIDTH,
+        settings.INPUT_BOX_INTRO_TEXT_HEIGHT,
+        "Enter FEN-String to start with",
+        settings.INPUT_BOX_INTRO_TEXT_COLOR,
+        settings.INPUT_BOX_INTRO_TEXT_TEXT_COLOR
+    )
 
     run = True
     while run:
         pygame.display.flip()
         background_group.draw(window)
         start_game_button.draw(window)
+        editor_mode_button.draw(window)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -41,13 +69,25 @@ def open_main_menu(window):
                     screen.fill(settings.CLEAR_SCREEN_COLOR)
                     background_group.draw(window)
                     return run_game()
+                if editor_mode_button.contains_position(event.pos):
+                    screen.fill(settings.CLEAR_SCREEN_COLOR)
+                    background_group.draw(window)
+                    input_box_intro_text.draw(window)
+                    fen_string_input_box.draw(window)
+                    initial_fen_position = utils.enter_fen_string(window, fen_string_input_box)
+                    screen.fill(settings.CLEAR_SCREEN_COLOR)
+                    if is_valid_fen(initial_fen_position):
+                        background_group.draw(window)
+                        return run_game(initial_fen_position)
+                    else:
+                        return open_main_menu(window)
     pygame.quit()
     sys.exit()
 
 
-def run_game():
-    game = Game()
-    game_info_window, game_info_group = gui.utils.create_game_info_group(game)
+def run_game(initial_fen_position=''):
+    game = Game(initial_fen_position)
+    game_info_window, game_info_group = utils.create_game_info_group(game)
     chessboard = BoardGUI(game.board, settings.SQUARE_SIZE)
     chessboard.initialize_board()
     pygame.display.init()
@@ -92,18 +132,18 @@ def run_game():
                 # User clicked on something
                 if draw_button.contains_position(event.pos):
                     if chessboard.board.game.can_be_drawn():
-                        gui.utils.draw_game(game_info_window, chessboard)
+                        utils.draw_game(game_info_window, chessboard)
                 if restart_button.contains_position(event.pos):
                     return run_game()
                 if resign_button.contains_position(event.pos):
                     if not chessboard.board.game.is_over():
-                        gui.utils.resign(game_info_window, chessboard)
+                        utils.resign(game_info_window, chessboard)
                 if selected_piece_sprite:
-                    gui.utils.cancel_highlighting_target_squares(target_squares)
+                    utils.cancel_highlighting_target_squares(target_squares)
                     # Clicked on potential target square
                     for square_sprite in target_squares:
                         if square_sprite.rect.collidepoint(event.pos):
-                            gui.utils.perform_move_on_board(
+                            utils.perform_move_on_board(
                                 game_info_window, chessboard, selected_piece_sprite, square_sprite, event.pos
                             )
                             break
@@ -112,7 +152,7 @@ def run_game():
                 else:
                     # 1st click for a move
                     selected_piece_sprite, target_squares =\
-                        gui.utils.select_piece_sprite_for_first_click_move(chessboard, event.pos, selected_piece_sprite)
+                        utils.select_piece_sprite_for_first_click_move(chessboard, event.pos, selected_piece_sprite)
             elif event.type == pygame.MOUSEMOTION:
                 if held_button and selected_piece_sprite:
                     drag_in_progress = True
@@ -121,8 +161,8 @@ def run_game():
                     if chessboard.contains(selected_piece_sprite):
                         selected_piece_sprite.move_relative(event.rel)
                     else:
-                        gui.utils.end_drag_and_drop_move(chessboard, selected_piece_sprite)
-                        gui.utils.cancel_highlighting_target_squares(target_squares)
+                        utils.end_drag_and_drop_move(chessboard, selected_piece_sprite)
+                        utils.cancel_highlighting_target_squares(target_squares)
                         chessboard.current_square_sprite(selected_piece_sprite).cancel_highlight()
                         selected_piece_sprite = None
                         drag_in_progress = False
@@ -130,7 +170,7 @@ def run_game():
                 held_button = False
                 # A piece is being released OR has just been selected by a left click
                 if drag_in_progress:
-                    gui.utils.release_piece_after_drag_and_drop(
+                    utils.release_piece_after_drag_and_drop(
                         game_info_window, chessboard, selected_piece_sprite, target_squares, event.pos
                     )
                     selected_piece_sprite = None

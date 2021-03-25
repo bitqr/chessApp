@@ -16,23 +16,26 @@ logging.getLogger().setLevel(logging.INFO)
 
 class Board:
 
-    def __init__(self, size, game):
+    def __init__(self, size, game, initial_fen_position=''):
         self.game = game
         self.squares = dict()
         self.size = size
-        self.position = Position()
         for rank in range(size):
             for file in range(size):
                 self.squares[(rank, file)] = Square(rank, file)
         self.white_king = Piece(PieceType.KING, Color.WHITE)
         self.black_king = Piece(PieceType.KING, Color.BLACK)
-        self.initialize_board()
+        self.position = Position(self.squares)
+        if initial_fen_position != '':
+            self.initialize_board_from_fen_string(initial_fen_position)
+        else:
+            self.initialize_board()
 
     def initialize_board(self):
         self.initialize_side(Color.WHITE)
         self.initialize_side(Color.BLACK)
-        self.position.update_controlled_squares(self.squares)
-        self.position.update_legal_moves(self.squares)
+        self.position.update_controlled_squares()
+        self.position.update_legal_moves()
         self.position.color_to_move = Color.WHITE
 
     def initialize_side(self, piece_color):
@@ -86,8 +89,8 @@ class Board:
         if move.piece.is_black():
             self.game.fullmoves_count += 1
         self.position.color_to_move = move.piece.opposite_color()
-        self.position.update_controlled_squares(self.squares)
-        self.position.update_legal_moves(self.squares)
+        self.position.update_controlled_squares()
+        self.position.update_legal_moves()
         self.determine_check_situation(move)
         # Look for dead position
         if not move.is_check and not self.game.is_over():
@@ -107,7 +110,7 @@ class Board:
         logging.info(fen_string)
 
     def determine_check_situation(self, move):
-        remaining_moves = self.position.legal_moves_count()
+        remaining_moves = len(self.position.legal_moves_list())
         # print(remaining_moves)
         if move.piece.is_white():
             if self.position.is_in_check(self.black_king):
@@ -189,8 +192,8 @@ class Board:
         self.read_fen_field_en_passant_square(fen_fields[3])
         self.game.fifty_move_rule_counter = int(fen_fields[4])
         self.game.fullmoves_count = int(fen_fields[5])
-        self.position.update_controlled_squares(self.squares)
-        self.position.update_legal_moves(self.squares)
+        self.position.update_controlled_squares()
+        self.position.update_legal_moves()
 
     def read_fen_field_square_contents(self, field):
         ranks = field.split('/')

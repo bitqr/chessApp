@@ -92,7 +92,7 @@ def is_out_of_board(rank, file):
 def initial_piece_positions(piece):
     result = []
     base_rank = 0 if piece.is_black() else 7
-    pawn_rank = 1 if piece.is_black else 6
+    pawn_rank = 1 if piece.is_black() else 6
     if piece.is_pawn():
         for file in range(8):
             result.append((pawn_rank, file))
@@ -108,7 +108,7 @@ def initial_piece_positions(piece):
         result.append((base_rank, 7))
     if piece.is_queen():
         return [(base_rank, 3)]
-    if piece.is_knight:
+    if piece.is_king():
         return [(base_rank, 4)]
     return result
 
@@ -145,6 +145,14 @@ def king_squares(king, square, all_squares, position):
     return result
 
 
+def king_controlled_squares(square):
+    result = []
+    for rank in range(max(0, square.rank - 1), min(7, square.rank + 1) + 1):
+        for file in range(max(0, square.file - 1), min(7, square.file + 1) + 1):
+            result.append((rank, file))
+    return result
+
+
 def promotion_tuple(square_coordinates):
     result = []
     if square_coordinates[0] in [0, 7]:
@@ -165,7 +173,8 @@ def pawn_squares(pawn, square, all_squares, latest_move):
     result = []
     if all_squares[(rank, square.file)].is_free():
         result.extend(promotion_tuple((rank, square.file)))
-    if pawn.never_moved and all_squares[(rank + pawn.opponent_direction(), square.file)].is_free():
+    if pawn.never_moved and all_squares[(rank, square.file)].is_free()\
+            and all_squares[(rank + pawn.opponent_direction(), square.file)].is_free():
         result.extend(promotion_tuple((rank + pawn.opponent_direction(), square.file)))
     if not is_out_of_range(square.file - 1) and all_squares[(rank, square.file - 1)].contains_opponent_piece(pawn):
         result.extend(promotion_tuple((rank, square.file - 1)))
@@ -388,3 +397,7 @@ def dict_copy(target):
         for piece_key in target[color_key].keys():
             result[color_key][piece_key] = target[color_key][piece_key]
     return result
+
+
+def is_valid_fen(fen_string):
+    return len(fen_string.split(' ')) == 6
