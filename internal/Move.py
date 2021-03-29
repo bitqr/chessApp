@@ -13,8 +13,8 @@ castling_files = [2, 6]
 
 class Move:
 
-    def __init__(self, origin_square, piece, destination_square):
-        self.piece = piece
+    def __init__(self, origin_square, destination_square, squares):
+        self.piece = squares[(origin_square.rank, origin_square.file)].content
         self.origin_square = origin_square
         self.destination_square = destination_square
         self.is_king_side_castle = self.is_king_side_castle()
@@ -62,10 +62,12 @@ class Move:
             '{0}_{1}{2}{3}'.format(
                 piece_to_display, self.origin_square.to_string(), delimiter, self.destination_square.to_string()
             )
+        if self.is_promotion:
+            result += '({0})'.format(self.piece.to_string().split(' ')[1])
         if self.is_king_side_castle:
-            return '0-0'
+            return 'O-O'
         if self.is_queen_side_castle:
-            return '0-0-0'
+            return 'O-O-O'
         if self.is_check:
             result += 'x'
         return result

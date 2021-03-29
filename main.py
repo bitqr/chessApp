@@ -1,3 +1,5 @@
+from engine import settings
+from engine.IntermediateEngine import IntermediateEngine
 from gui import utils
 from internal.utils import *
 from gui.ButtonGUI import ButtonGUI
@@ -74,11 +76,10 @@ def open_main_menu(window):
                     fen_string_input_box.draw(window)
                     initial_fen_position = utils.enter_fen_string(window, fen_string_input_box)
                     screen.fill(settings.CLEAR_SCREEN_COLOR)
-                    if is_valid_fen(initial_fen_position):
-                        background_group.draw(window)
-                        return run_game(initial_fen_position)
-                    else:
-                        return open_main_menu(window)
+                    if not is_valid_fen(initial_fen_position):
+                        initial_fen_position = ''
+                    background_group.draw(window)
+                    return run_game(initial_fen_position)
     pygame.quit()
     sys.exit()
 
@@ -128,6 +129,7 @@ def run_game(initial_fen_position='', player_color=None):
     game_info_window, game_info_group = utils.create_game_info_group(game)
     chessboard = BoardGUI(game.board, settings.SQUARE_SIZE)
     chessboard.initialize_board()
+    engine = IntermediateEngine(Color.WHITE if player_color == Color.BLACK else Color.BLACK)
     pygame.display.init()
     run = True
     selected_piece_sprite = None
@@ -162,7 +164,7 @@ def run_game(initial_fen_position='', player_color=None):
         settings.DRAW_BUTTON_TEXT_COLOR
     )
     if player_color == Color.BLACK:
-        utils.perform_engine_move(chessboard, game_info_window, player_color)
+        utils.perform_engine_move(engine, chessboard, game_info_window, player_color)
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -184,6 +186,7 @@ def run_game(initial_fen_position='', player_color=None):
                     for square_sprite in target_squares:
                         if square_sprite.rect.collidepoint(event.pos):
                             utils.perform_move_on_board(
+                                engine,
                                 game_info_window,
                                 chessboard,
                                 selected_piece_sprite,
@@ -218,7 +221,13 @@ def run_game(initial_fen_position='', player_color=None):
                 # A piece is being released OR has just been selected by a left click
                 if drag_in_progress:
                     utils.release_piece_after_drag_and_drop(
-                        game_info_window, chessboard, selected_piece_sprite, target_squares, event.pos, player_color
+                        engine,
+                        game_info_window,
+                        chessboard,
+                        selected_piece_sprite,
+                        target_squares,
+                        event.pos,
+                        player_color
                     )
                     selected_piece_sprite = None
                 drag_in_progress = False

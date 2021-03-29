@@ -14,11 +14,11 @@ class Position:
         self.latest_move = None
         self.squares = squares
 
-    def left_pieces_on_board(self):
+    def pieces_left_on_board(self):
         return self.pieces_positions.keys()
 
     def is_dead_position(self):
-        pieces = self.left_pieces_on_board()
+        pieces = self.pieces_left_on_board()
         # King vs King
         if len(pieces) == 2:
             return True
@@ -166,7 +166,7 @@ class Position:
         for piece in self.legal_moves.keys():
             if piece.color == self.color_to_move:
                 for item in self.legal_moves[piece]:
-                    move = Move(self.pieces_positions[piece], piece, self.squares[item[:2]])
+                    move = Move(self.pieces_positions[piece], self.squares[item[:2]], self.squares)
                     if len(item) == 3:
                         # This move is a pawn promotion
                         move.promoted_piece_type = item[2]
