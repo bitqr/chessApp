@@ -30,6 +30,9 @@ class Board:
             self.initialize_board_from_fen_string(initial_fen_position)
         else:
             self.initialize_board()
+        if not initial_fen_position:
+            initial_fen_position = self.to_fen_string()
+        self.fen_position = initial_fen_position
 
     def initialize_board(self):
         self.initialize_side(Color.WHITE)
@@ -58,13 +61,14 @@ class Board:
     def current_square(self, piece):
         return self.position.pieces_positions[piece]
 
-    def apply_move(self, move):
-        target_piece = move.destination_square.content
-        self.leave_square(move.piece)
+    def apply_move(self, move, log=True):
+        target_piece = self.squares[(move.destination_square.rank, move.destination_square.file)].content
+        piece_to_move = self.squares[(move.origin_square.rank, move.origin_square.file)].content
+        self.leave_square(piece_to_move)
         # If the move is a capture, remove the piece on the destination square
         if move.is_capture:
             self.game.add_captured_piece(target_piece, self.position)
-        self.put_piece_on_square(move.piece, move.destination_square.rank, move.destination_square.file)
+        self.put_piece_on_square(piece_to_move, move.destination_square.rank, move.destination_square.file)
         if move.is_castle:
             rook_move = compute_castling_rook_move(move, self.squares)
             self.leave_square(rook_move.piece)
@@ -80,15 +84,15 @@ class Board:
             self.game.add_captured_piece(captured_pawn_square.content, self.position)
             captured_pawn_square.empty_content()
         if move.is_promotion:
-            move.piece.promote(move.promoted_piece_type)
-        move.piece.never_moved = False
+            piece_to_move.promote(move.promoted_piece_type)
+        piece_to_move.never_moved = False
         self.position.latest_move = move
         self.game.move_history.append(move)
         self.update_fifty_move_rule_counter(move)
         # Prepare next move
-        if move.piece.is_black():
+        if piece_to_move.is_black():
             self.game.fullmoves_count += 1
-        self.position.color_to_move = move.piece.opposite_color()
+        self.position.color_to_move = piece_to_move.opposite_color()
         self.position.update_controlled_squares()
         self.position.update_legal_moves()
         self.determine_check_situation(move)
@@ -97,22 +101,24 @@ class Board:
             if self.position.is_dead_position():
                 self.game.result = GameResult.DRAW_BY_DEAD_POSITION
                 self.game.end()
-        logging.info(move.to_string(target_piece))
+        if log:
+            logging.info(move.to_string(target_piece))
         # Look for threefold repetition
-        self.update_repetition_status()
+        self.update_repetition_status(log)
 
-    def update_repetition_status(self):
-        fen_string = self.to_fen_string()
-        fen_key = ' '.join(fen_string.split(' ')[:4])
-        self.game.past_positions[fen_key] = self.game.past_positions.get(fen_key, 0) + 1
-        if self.game.past_positions[fen_key] >= 3:
+    def update_repetition_status(self, log=True):
+        self.fen_position = self.to_fen_string()
+        fen_board = ' '.join(self.fen_position.split(' ')[:4])
+        self.game.past_positions[fen_board] = self.game.past_positions.get(fen_board, 0) + 1
+        if self.game.past_positions[fen_board] >= 3:
             self.game.can_be_drawn_by_threefold_repetition = True
-        logging.info(fen_string)
+        if log:
+            logging.info(self.fen_position)
 
     def determine_check_situation(self, move):
         remaining_moves = len(self.position.legal_moves_list())
         # print(remaining_moves)
-        if move.piece.is_white():
+        if self.position.color_to_move == Color.BLACK:
             if self.position.is_in_check(self.black_king):
                 move.is_check = True
                 if remaining_moves == 0:
@@ -237,4 +243,4 @@ class Board:
             rank, file = utils.string_to_square_coordinates(field)
             origin_square = self.squares[(1, file) if rank == 2 else (6, file)]
             destination_square = self.squares[(3, file) if rank == 2 else (4, file)]
-            self.position.latest_move = Move(origin_square, destination_square.content, destination_square)
+            self.position.latest_move = Move(origin_square, destination_square, self.squares)

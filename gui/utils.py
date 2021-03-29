@@ -67,6 +67,7 @@ def draw_game(game_info, chessboard):
 
 
 def perform_move_on_board(
+        engine,
         game_info,
         chessboard,
         selected_piece_sprite,
@@ -85,7 +86,7 @@ def perform_move_on_board(
         chessboard.square_sprites[(latest_move.origin_square.rank, latest_move.origin_square.file)] \
             .un_highlight()
     origin_square = chessboard.current_square_sprite(selected_piece_sprite).square
-    move = Move(origin_square, selected_piece_sprite.piece, destination_square_sprite.square)
+    move = Move(origin_square, destination_square_sprite.square, chessboard.board.squares)
     piece_type = promoted_piece
     if move.is_promotion:
         # If it's an engine move, promote automatically
@@ -123,26 +124,31 @@ def perform_move_on_board(
     end_drag_and_drop_move(chessboard, selected_piece_sprite)
     # Perform engine move
     if not chessboard.board.game.is_over() and move.piece.color == player_color:
-        perform_engine_move(chessboard, game_info, player_color)
+        perform_engine_move(engine, chessboard, game_info, player_color)
 
 
-def perform_engine_move(chessboard, game_info, player_color):
-    engine_move = chessboard.board.game.engine.choose_move(chessboard.board.position)
-    selected_piece_sprite = chessboard.piece_sprites[engine_move.piece]
-    origin_square_sprite = chessboard.current_square_sprite(selected_piece_sprite)
-    destination_square_sprite = \
-        chessboard.square_sprites[(engine_move.destination_square.rank, engine_move.destination_square.file)]
-    perform_move_on_board(
-        game_info,
-        chessboard,
-        selected_piece_sprite,
-        destination_square_sprite,
-        player_color,
-        chessboard.board.position.latest_move,
-        engine_move.promoted_piece_type
-    )
-    destination_square_sprite.highlight_latest_move()
-    origin_square_sprite.highlight_latest_move()
+def perform_engine_move(engine, chessboard, game_info, player_color):
+    engine_move = engine.choose_move(chessboard.board.game)
+    if engine_move == 'DRAW':
+        chessboard.board.game.apply_draw()
+        game_info.update_text()
+    else:
+        selected_piece_sprite = chessboard.piece_sprites[engine_move.piece]
+        origin_square_sprite = chessboard.current_square_sprite(selected_piece_sprite)
+        destination_square_sprite = \
+            chessboard.square_sprites[(engine_move.destination_square.rank, engine_move.destination_square.file)]
+        perform_move_on_board(
+            engine,
+            game_info,
+            chessboard,
+            selected_piece_sprite,
+            destination_square_sprite,
+            player_color,
+            chessboard.board.position.latest_move,
+            engine_move.promoted_piece_type
+        )
+        destination_square_sprite.highlight_latest_move()
+        origin_square_sprite.highlight_latest_move()
 
 
 def end_drag_and_drop_move(chessboard, selected_piece_sprite):
@@ -152,6 +158,7 @@ def end_drag_and_drop_move(chessboard, selected_piece_sprite):
 
 
 def release_piece_after_drag_and_drop(
+        engine,
         game_info,
         chessboard,
         selected_piece_sprite,
@@ -164,6 +171,7 @@ def release_piece_after_drag_and_drop(
         if square_sprite.rect.collidepoint(event_position):
             found_square = True
             perform_move_on_board(
+                engine,
                 game_info,
                 chessboard,
                 selected_piece_sprite,

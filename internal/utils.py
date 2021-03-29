@@ -16,7 +16,8 @@ game_result_to_string = {
     GameResult.WHITE_WINS_ON_TIME: 'Time out for Black! White wins!',
     GameResult.BLACK_WINS_ON_TIME: 'Time out for White! Black wins!',
     GameResult.DRAW_BY_DEAD_POSITION: 'Draw by dead position!',
-    GameResult.DRAW_BY_50_MOVE_RULE: 'Draw by the 50-Move rule!'
+    GameResult.DRAW_BY_50_MOVE_RULE: 'Draw by the 50-Move rule!',
+    GameResult.UNDEFINED: 'Undefined'
 }
 
 
@@ -59,10 +60,9 @@ def fen_letter_to_piece(letter):
 def compute_castling_rook_move(move, squares):
     rook_square = squares[(move.destination_square.rank, 7)] if move.destination_square.file == 6 \
         else squares[(move.destination_square.rank, 0)]
-    rook = rook_square.content
     rook_destination_file = 5 if move.destination_square.file == 6 else 3
     rook_destination_square = squares[(move.destination_square.rank, rook_destination_file)]
-    return Move(rook_square, rook, rook_destination_square)
+    return Move(rook_square, rook_destination_square, squares)
 
 
 def piece_type_to_string(piece_type):

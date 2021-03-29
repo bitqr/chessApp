@@ -9,8 +9,5 @@ Will contain:
 
 # Next Objectives:
 
-- Play against engine workflow:
-  - highlight the latest engine move on the board
-
 - Zero-knowledge chess engine
-    - Do be more clever
+  - Neural network-based chess engine
