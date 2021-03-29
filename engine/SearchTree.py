@@ -60,6 +60,8 @@ class SearchTree:
     # This method generates children, by computing the legal moves of a given position
     def expand(self, node):
         legal_moves = node.game.board.position.legal_moves_list()
+        if len(legal_moves) == 0:
+            return None
         for move in legal_moves:
             temporary_game = Game(node.game.board.fen_position)
             temporary_game.board.apply_move(move, log=False)
