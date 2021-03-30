@@ -1,3 +1,9 @@
+import numpy
+
+from internal.Move import Move
+from internal.PieceType import PieceType
+
+
 def get_bitboard(board_pieces, piece):
     result = []
     for rank in board_pieces.split('/'):
@@ -86,12 +92,142 @@ def from_fen_to_input_vector(fen_position):
     return result
 
 
-# Each move is equivalent to a vector of 8*8*73 planes
-# The 8*8 component is the origin square
+# In AlphaZero network, each move is equivalent to a vector of 8*8*73 planes
 # The 73 planes are composed of
 # - 56 planes of line-wise and diagonal-wise moves, with 7 distance possible values and 8 directions
 # - 8 planes of knight moves
 # - 9 under-promotion moves: for each piece (knight, bishop, rook), 3 possible directions (straight, and 2 diagonals)
 # - A queen promotion move is considered in the 56 planes, as a 1-distance and one among 3 directions
+# That would make a vector of 4672 components, which is big
+# Another possibility with 4164 components is the following:
+# For each pair of distinct squares in the board, add a component for a non-promoting move (64 * 63 = 4032)
+# Promoting moves are related to 44 pairs of squares (from rank 7 (resp.2) to rank 8 (resp. 1) in 3 possible directions)
+# Each pair of squares have 3 promotion possibilities --> 3 * 44 = 132 (by default, promoted to a queen)
+# Total: 4164 components
 def from_move_to_output(move):
-    pass
+    result = []
+    origin_rank, origin_file = move.origin_square.rank, move.origin_square.file
+    destination_rank, destination_file = move.destination_square.rank, move.destination_square.file
+    result.extend(numpy.zeros(63 * 64))
+    if not move.is_promotion or move.promoted_piece_type == PieceType.QUEEN:
+        result[origin_destination_couple_to_index(origin_rank, origin_file, destination_rank, destination_file)] = 1.
+    # Under-promotion moves
+    under_promotion_components = numpy.zeros(132)
+    if move.is_promotion and move.promoted_piece_type != PieceType.QUEEN:
+        output_index = promotion_to_output_index[(origin_rank, origin_file, destination_rank, destination_file)] \
+            if (origin_rank, origin_file, destination_rank, destination_file) in promotion_to_output_index \
+            else 22 + promotion_to_output_index[
+                (7 - origin_rank, origin_file, 7 - destination_rank, destination_file)
+            ]
+        under_promotion_components[3 * output_index + piece_type_to_offset[move.promoted_piece_type]] = 1.
+    result.extend(under_promotion_components)
+    return result
+
+
+def from_neural_network_output_to_move(game, output_vector):
+    move_index = output_vector.index(1.)
+    if move_index < 4032:
+        # Not an under-promotion move
+        origin_rank, origin_file, destination_rank, destination_file = index_to_origin_destination_couple(move_index)
+        move = Move(
+            game.board.squares[(origin_rank, origin_file)],
+            game.board.squares[(destination_rank, destination_file)],
+            game.board.squares
+        )
+        # By default, promoted to a queen
+        if move.is_promotion:
+            move.promoted_piece_type = PieceType.QUEEN
+        return move
+    # Under-promotion case
+    start_index = 4032 if move_index < 4098 else 4098
+    # White under-promotion
+    (origin_rank, origin_file, destination_rank, destination_file) = \
+        reverse_promotion_to_output_index[int((move_index - start_index) / 3)]
+    if start_index == 4098:
+        origin_rank = 7 - origin_rank
+        destination_rank = 7 - destination_rank
+    move = Move(
+        game.board.squares[(origin_rank, origin_file)],
+        game.board.squares[(destination_rank, destination_file)],
+        game.board.squares
+    )
+    move.promoted_piece_type = reverse_piece_type_to_offset[(move_index - start_index) % 3]
+    return move
+
+
+promotion_to_output_index = {
+    (1, 0, 0, 0): 0,
+    (1, 0, 0, 1): 1,
+    (1, 1, 0, 0): 2,
+    (1, 1, 0, 1): 3,
+    (1, 1, 0, 2): 4,
+    (1, 2, 0, 1): 5,
+    (1, 2, 0, 2): 6,
+    (1, 2, 0, 3): 7,
+    (1, 3, 0, 2): 8,
+    (1, 3, 0, 3): 9,
+    (1, 3, 0, 4): 10,
+    (1, 4, 0, 3): 11,
+    (1, 4, 0, 4): 12,
+    (1, 4, 0, 5): 13,
+    (1, 5, 0, 4): 14,
+    (1, 5, 0, 5): 15,
+    (1, 5, 0, 6): 16,
+    (1, 6, 0, 5): 17,
+    (1, 6, 0, 6): 18,
+    (1, 6, 0, 7): 19,
+    (1, 7, 0, 6): 20,
+    (1, 7, 0, 7): 21
+}
+
+reverse_promotion_to_output_index = {
+    0: (1, 0, 0, 0),
+    1: (1, 0, 0, 1),
+    2: (1, 1, 0, 0),
+    3: (1, 1, 0, 1),
+    4: (1, 1, 0, 2),
+    5: (1, 2, 0, 1),
+    6: (1, 2, 0, 2),
+    7: (1, 2, 0, 3),
+    8: (1, 3, 0, 2),
+    9: (1, 3, 0, 3),
+    10: (1, 3, 0, 4),
+    11: (1, 4, 0, 3),
+    12: (1, 4, 0, 4),
+    13: (1, 4, 0, 5),
+    14: (1, 5, 0, 4),
+    15: (1, 5, 0, 5),
+    16: (1, 5, 0, 6),
+    17: (1, 6, 0, 5),
+    18: (1, 6, 0, 6),
+    19: (1, 6, 0, 7),
+    20: (1, 7, 0, 6),
+    21: (1, 7, 0, 7)
+}
+
+piece_type_to_offset = {
+    PieceType.KNIGHT: 0,
+    PieceType.BISHOP: 1,
+    PieceType.ROOK: 2
+}
+
+reverse_piece_type_to_offset = {
+    0: PieceType.KNIGHT,
+    1: PieceType.BISHOP,
+    2: PieceType.ROOK
+}
+
+
+def coordinates_to_index(rank, file):
+    return rank * 8 + file
+
+
+def origin_destination_couple_to_index(origin_rank, origin_file, destination_rank, destination_file):
+    return coordinates_to_index(origin_rank, origin_file) * 63 \
+           + coordinates_to_index(destination_rank, destination_file)
+
+
+def index_to_origin_destination_couple(move_index):
+    origin_index = int(move_index / 63)
+    destination_index = move_index % 63
+    return int(origin_index / 8), origin_index % 8, int(destination_index / 8), destination_index % 8
