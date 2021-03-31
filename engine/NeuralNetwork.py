@@ -35,9 +35,12 @@ def initialize_network():
 
 class NeuralNetwork:
 
-    def __init__(self):
+    def __init__(self, model=None):
         # TODO: Initialize network
-        self.model = initialize_network()
+        if model:
+            self.model = model
+        else:
+            self.model = initialize_network()
 
     def evaluate(self, input_vector: Tensor):
         # Receives an input vector and returns
@@ -66,3 +69,6 @@ class NeuralNetwork:
         policy_vector = tensorflow.constant(self.evaluate(input_vector))
         # Among all possible moves take the one indicated by the policy vector and apply it
         return choose_move(game, policy_vector)
+
+    def save_model(self, file_name):
+        self.model.save(file_name)

@@ -1,29 +1,34 @@
 import tensorflow
 from tensorflow import keras
-from tensorflow.keras import layers, Input
 
 from engine import utils
+from engine.NeuralNetwork import NeuralNetwork
 
 fen_position = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 input_vector = utils.from_fen_to_input_vector(fen_position)
 input_vector = tensorflow.convert_to_tensor([input_vector], dtype=tensorflow.float32)
 print(input_vector)
 
+# Neural network starting from scratch
+neural_network = NeuralNetwork()
 
-model = keras.Sequential(name="my_neural_network")
-first_layer = layers.Dense(2, activation="relu", name="layer1")
-output_layer = layers.Dense(4164, activation="relu", name="output_layer")
+# Train the model on random data
+neural_network.model.compile()
 
-# As decided, the input vectors, representing chessboard positions, will be of size 784
-model.add(Input(shape=784,))
-model.add(first_layer)
-model.add(output_layer)
-
-print(first_layer.weights)
-print(first_layer.bias)
-
-y = model(input_vector)
-print('Number of weights after calling the model:', len(model.weights))
-model.summary()
+y = neural_network.evaluate(input_vector)
+neural_network.model.summary()
 
 print(y)
+
+neural_network.save_model('../../resources/model_parameters/example_model')
+
+# Load the model in a new NN
+copied_model = keras.models.load_model('../../resources/model_parameters/example_model')
+other_neural_network = NeuralNetwork(copied_model)
+
+y2 = other_neural_network.evaluate(input_vector)
+
+# Check that both neural networks provide the same evaluation
+print(y2)
+
+other_neural_network.model.summary()

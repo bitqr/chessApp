@@ -1,7 +1,6 @@
 from engine import settings
 from engine.AdvancedEngine import AdvancedEngine
 from engine.IntermediateEngine import IntermediateEngine
-from engine.NeuralNetwork import NeuralNetwork
 from gui import utils
 from internal.utils import *
 from gui.ButtonGUI import ButtonGUI
@@ -131,8 +130,8 @@ def run_game(game, player_color=None, advanced_engine=True):
     game_info_window, game_info_group = utils.create_game_info_group(game)
     chessboard = BoardGUI(game.board, settings.SQUARE_SIZE)
     chessboard.initialize_board()
-    engine = AdvancedEngine(NeuralNetwork()) if advanced_engine else \
-        IntermediateEngine(Color.WHITE if player_color == Color.BLACK else Color.BLACK)
+    engine = AdvancedEngine(saved_model='resources/model_parameters/trained_model') if advanced_engine \
+        else IntermediateEngine(Color.WHITE if player_color == Color.BLACK else Color.BLACK)
     pygame.display.init()
     run = True
     restart_button = ButtonGUI(
