@@ -16,6 +16,7 @@ move_index = utils.origin_destination_couple_to_index(
     moves[0].destination_square.file
 )
 assert output_vector[move_index] == 1.
+assert utils.from_move_to_output_index(moves[0]) == move_index
 obtained_move = utils.from_neural_network_output_to_move(game, output_vector)
 assert (obtained_move.origin_square.rank, obtained_move.origin_square.file) == (6, 0)
 assert (obtained_move.destination_square.rank, obtained_move.destination_square.file) == (5, 0)
@@ -30,6 +31,7 @@ output_vector = utils.from_move_to_output(moves[0])
 assert len(output_vector) == 4164
 assert sum(output_vector) == 1.
 assert output_vector[4032] == 1.
+assert utils.from_move_to_output_index(moves[0]) == 4032
 obtained_move = utils.from_neural_network_output_to_move(game, output_vector)
 assert (obtained_move.origin_square.rank, obtained_move.origin_square.file) == (1, 0)
 assert (obtained_move.destination_square.rank, obtained_move.destination_square.file) == (0, 0)
@@ -41,6 +43,7 @@ output_vector = utils.from_move_to_output(moves[1])
 assert len(output_vector) == 4164
 assert sum(output_vector) == 1.
 assert output_vector[4033] == 1.
+assert utils.from_move_to_output_index(moves[1]) == 4033
 obtained_move = utils.from_neural_network_output_to_move(game, output_vector)
 assert (obtained_move.origin_square.rank, obtained_move.origin_square.file) == (1, 0)
 assert (obtained_move.destination_square.rank, obtained_move.destination_square.file) == (0, 0)
@@ -52,6 +55,7 @@ output_vector = utils.from_move_to_output(moves[2])
 assert len(output_vector) == 4164
 assert sum(output_vector) == 1.
 assert output_vector[4034] == 1.
+assert utils.from_move_to_output_index(moves[2]) == 4034
 obtained_move = utils.from_neural_network_output_to_move(game, output_vector)
 assert (obtained_move.origin_square.rank, obtained_move.origin_square.file) == (1, 0)
 assert (obtained_move.destination_square.rank, obtained_move.destination_square.file) == (0, 0)
@@ -70,6 +74,7 @@ move_index = utils.origin_destination_couple_to_index(
     moves[3].destination_square.file
 )
 assert output_vector[move_index] == 1.
+assert utils.from_move_to_output_index(moves[3]) == move_index
 obtained_move = utils.from_neural_network_output_to_move(game, output_vector)
 assert (obtained_move.origin_square.rank, obtained_move.origin_square.file) == (1, 0)
 assert (obtained_move.destination_square.rank, obtained_move.destination_square.file) == (0, 0)
@@ -87,6 +92,7 @@ output_vector = utils.from_move_to_output(moves[24])
 assert len(output_vector) == 4164
 assert sum(output_vector) == 1.
 assert output_vector[4032+3*(22+12)] == 1.
+assert utils.from_move_to_output_index(moves[24]) == 4032+3*(22+12)
 obtained_move = utils.from_neural_network_output_to_move(game, output_vector)
 assert (obtained_move.origin_square.rank, obtained_move.origin_square.file) == (6, 4)
 assert (obtained_move.destination_square.rank, obtained_move.destination_square.file) == (7, 4)
@@ -99,6 +105,7 @@ output_vector = utils.from_move_to_output(moves[25])
 assert len(output_vector) == 4164
 assert sum(output_vector) == 1.
 assert output_vector[4032+3*(22+12)+1] == 1.
+assert utils.from_move_to_output_index(moves[25]) == 4032+3*(22+12)+1
 obtained_move = utils.from_neural_network_output_to_move(game, output_vector)
 assert (obtained_move.origin_square.rank, obtained_move.origin_square.file) == (6, 4)
 assert (obtained_move.destination_square.rank, obtained_move.destination_square.file) == (7, 4)
@@ -110,6 +117,7 @@ output_vector = utils.from_move_to_output(moves[26])
 assert len(output_vector) == 4164
 assert sum(output_vector) == 1.
 assert output_vector[4032+3*(22+12)+2] == 1.
+assert utils.from_move_to_output_index(moves[26]) == 4032+3*(22+12)+2
 obtained_move = utils.from_neural_network_output_to_move(game, output_vector)
 assert (obtained_move.origin_square.rank, obtained_move.origin_square.file) == (6, 4)
 assert (obtained_move.destination_square.rank, obtained_move.destination_square.file) == (7, 4)
@@ -127,6 +135,7 @@ move_index = utils.origin_destination_couple_to_index(
     moves[27].destination_square.file
 )
 assert output_vector[move_index] == 1.
+assert utils.from_move_to_output_index(moves[27]) == move_index
 obtained_move = utils.from_neural_network_output_to_move(game, output_vector)
 assert (obtained_move.origin_square.rank, obtained_move.origin_square.file) == (6, 4)
 assert (obtained_move.destination_square.rank, obtained_move.destination_square.file) == (7, 4)
@@ -142,6 +151,7 @@ output_vector = utils.from_move_to_output(moves[30])
 assert len(output_vector) == 4164
 assert sum(output_vector) == 1.
 assert output_vector[4032+3*(22+13)+2] == 1.
+assert utils.from_move_to_output_index(moves[30]) == 4032+3*(22+13)+2
 obtained_move = utils.from_neural_network_output_to_move(game, output_vector)
 assert (obtained_move.origin_square.rank, obtained_move.origin_square.file) == (6, 4)
 assert (obtained_move.destination_square.rank, obtained_move.destination_square.file) == (7, 5)
@@ -159,6 +169,7 @@ move_index = utils.origin_destination_couple_to_index(
     moves[18].destination_square.file
 )
 assert output_vector[move_index] == 1.
+assert utils.from_move_to_output_index(moves[18]) == move_index
 obtained_move = utils.from_neural_network_output_to_move(game, output_vector)
 assert (obtained_move.origin_square.rank, obtained_move.origin_square.file) == (5, 4)
 assert (obtained_move.destination_square.rank, obtained_move.destination_square.file) == (1, 0)

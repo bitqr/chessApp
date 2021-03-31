@@ -79,6 +79,5 @@ class SearchTree:
             node.value = node.game.get_score(self.my_color)
         else:
             # If the game continues, run the game until an end is reached
-            temporary_game = Game(node.game.board.fen_position)
-            self.random_engine.simulate(temporary_game)
-            back_propagate(node, temporary_game.get_score(self.my_color))
+            score = self.neural_network.simulate(node.game.board.fen_position, self.my_color)
+            back_propagate(node, score)
