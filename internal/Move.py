@@ -69,5 +69,5 @@ class Move:
         if self.is_queen_side_castle:
             return 'O-O-O'
         if self.is_check:
-            result += 'x'
+            result += '+'
         return result

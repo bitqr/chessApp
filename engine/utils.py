@@ -109,11 +109,11 @@ def from_move_to_output(move):
     origin_rank, origin_file = move.origin_square.rank, move.origin_square.file
     destination_rank, destination_file = move.destination_square.rank, move.destination_square.file
     result.extend(numpy.zeros(63 * 64))
-    if not move.is_promotion or move.promoted_piece_type == PieceType.QUEEN:
-        result[origin_destination_couple_to_index(origin_rank, origin_file, destination_rank, destination_file)] = 1.
     # Under-promotion moves
     under_promotion_components = numpy.zeros(132)
-    if move.is_promotion and move.promoted_piece_type != PieceType.QUEEN:
+    if not move.is_promotion or move.promoted_piece_type == PieceType.QUEEN:
+        result[origin_destination_couple_to_index(origin_rank, origin_file, destination_rank, destination_file)] = 1.
+    else:
         output_index = promotion_to_output_index[(origin_rank, origin_file, destination_rank, destination_file)] \
             if (origin_rank, origin_file, destination_rank, destination_file) in promotion_to_output_index \
             else 22 + promotion_to_output_index[
@@ -122,6 +122,21 @@ def from_move_to_output(move):
         under_promotion_components[3 * output_index + piece_type_to_offset[move.promoted_piece_type]] = 1.
     result.extend(under_promotion_components)
     return result
+
+
+def from_move_to_output_index(move):
+    origin_rank, origin_file = move.origin_square.rank, move.origin_square.file
+    destination_rank, destination_file = move.destination_square.rank, move.destination_square.file
+    if not move.is_promotion or move.promoted_piece_type == PieceType.QUEEN:
+        return origin_destination_couple_to_index(origin_rank, origin_file, destination_rank, destination_file)
+    else:
+        output_index = promotion_to_output_index[(origin_rank, origin_file, destination_rank, destination_file)] \
+            if (origin_rank, origin_file, destination_rank, destination_file) in promotion_to_output_index \
+            else 22 + promotion_to_output_index[
+            (7 - origin_rank, origin_file, 7 - destination_rank, destination_file)
+        ]
+        return 4032 + 3 * output_index + piece_type_to_offset[move.promoted_piece_type]
+    pass
 
 
 def from_neural_network_output_to_move(game, output_vector):
