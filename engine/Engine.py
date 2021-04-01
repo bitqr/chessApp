@@ -1,23 +1,22 @@
 import math
 
 from engine import settings
-from engine.NeuralNetwork import NeuralNetwork
+from engine.SearchNode import SearchNode
 from engine.SearchTree import SearchTree
-from internal.Move import Move
 
 
 class Engine:
 
-    def __init__(self):
-        self.neural_network = NeuralNetwork()
-        self.search_tree = None
+    def __init__(self, neural_net):
+        self.neural_network = neural_net
 
-    def choose_move(self, game):
-        # Choose the move here
-        # At the beginning of the game, the position may not have a corresponding node in the search tree
-        self.search_tree = SearchTree(game.board.fen_position, settings.EXPLORATION_PARAMETER, self.neural_network)
-        starting_node = self.search_tree.states[game.board.fen_position]
-        self.search_tree.run_simulations(starting_node, settings.MONTE_CARLO_SIMULATIONS_COUNT)
+    def run_mcts(self, game):
+        search_tree = SearchTree(game.board.fen_position, settings.EXPLORATION_PARAMETER, self.neural_network)
+        fen_position = game.board.fen_position
+        if fen_position not in search_tree.states:
+            search_tree.states[fen_position] = SearchNode(game)
+        starting_node = search_tree.states[fen_position]
+        search_tree.run_simulations(starting_node, settings.MONTE_CARLO_SIMULATIONS_COUNT)
         # After running the simulations from the given node, we can decide the move right away
         chosen_move = None
         current_value = -math.inf
@@ -28,7 +27,6 @@ class Engine:
                 chosen_move = move
         print('Chosen move = [{0}, {1}]'.format(chosen_move.origin_square.to_string(),
                                                 chosen_move.destination_square.to_string()))
-        # Create a move with input game objects
-        return Move(game.board.squares[(chosen_move.origin_square.rank, chosen_move.origin_square.file)],
-                    game.board.squares[(chosen_move.destination_square.rank, chosen_move.destination_square.file)],
-                    game.board.squares)
+        # Create the pair (input, output) to update the model
+        probability_vector = search_tree.root.create_output_probability_vector()
+        return chosen_move, probability_vector

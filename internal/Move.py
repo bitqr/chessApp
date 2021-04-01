@@ -2,6 +2,22 @@ from internal.Color import Color
 from internal.PieceType import PieceType
 
 
+def piece_type_to_string(piece_type):
+    if piece_type == PieceType.PAWN:
+        return 'Pawn'
+    if piece_type == PieceType.KNIGHT:
+        return 'Knight'
+    if piece_type == PieceType.BISHOP:
+        return 'Bishop'
+    if piece_type == PieceType.ROOK:
+        return 'Rook'
+    if piece_type == PieceType.QUEEN:
+        return 'Queen'
+    if piece_type == PieceType.KING:
+        return 'King'
+    return 'Nothing'
+
+
 def base_rank_index(piece_color):
     if piece_color == Color.WHITE:
         return 7
@@ -63,7 +79,7 @@ class Move:
                 piece_to_display, self.origin_square.to_string(), delimiter, self.destination_square.to_string()
             )
         if self.is_promotion:
-            result += '({0})'.format(self.piece.to_string().split(' ')[1])
+            result += '({0})'.format(piece_type_to_string(self.promoted_piece_type))
         if self.is_king_side_castle:
             return 'O-O'
         if self.is_queen_side_castle:

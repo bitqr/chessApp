@@ -1,9 +1,8 @@
-from engine import settings
-from engine.RandomEngine import RandomEngine
+from engine import settings, utils
 from engine.SearchNode import SearchNode
+from engine.utils import from_move_to_output_index
 from internal.Game import Game
 
-import random
 import math
 
 
@@ -27,12 +26,11 @@ class SearchTree:
         self.neural_network = neural_network
         self.states = dict()
         self.states[game.board.fen_position] = self.root
-        self.random_engine = RandomEngine()
 
     def run_simulations(self, node, simulations_count):
         for iteration in range(simulations_count):
             self.search(node)
-            if iteration % 1 == 0:
+            if iteration % 10 == 0:
                 print("Simulation {0}".format(iteration))
 
     def search(self, node):
@@ -40,10 +38,10 @@ class SearchTree:
             # While the node has children, select one of them
             node.visit_count += 1
             node = self.select(node)
+        # Reached a leaf node
         if not node.is_terminal():
             node.visit_count += 1
-            node = self.expand(node)
-        self.simulate(node)
+            self.expand(node)
 
     # This method selects good child nodes, starting from given node, based on the evaluation function
     # Generally, the selected node is the one that maximizes the upper confidence bound
@@ -58,26 +56,21 @@ class SearchTree:
         return node.children[chosen_move]
 
     # This method generates children, by computing the legal moves of a given position
+    # When creating a new child for the expanded node, we get its evaluation from the
+    # neural net and pass it to the prior probability (used in the selection argument)
     def expand(self, node):
         legal_moves = node.game.board.position.legal_moves_list()
         if len(legal_moves) == 0:
             return None
+        input_vector = utils.from_fen_to_input_vector(node.game.board.fen_position)
+        policy = self.neural_network.evaluate(input_vector)
         for move in legal_moves:
             temporary_game = Game(node.game.board.fen_position)
             temporary_game.board.apply_move(move, log=False)
             if temporary_game.board.fen_position not in self.states:
-                self.states[temporary_game.board.fen_position] = SearchNode(temporary_game, move, node)
+                prior_probability = policy[from_move_to_output_index(move)]
+                self.states[temporary_game.board.fen_position] = SearchNode(temporary_game, node, prior_probability)
             node.children[move] = self.states[temporary_game.board.fen_position]
-        # Choose a random child of the node and start a play-out from it
-        return random.choice(list(node.children.values()))
-
-    # This method runs a simulation starting from the given node, until a terminal/leaf node is reached.
-    # When the simulation is over, the nodes in the path up to the root can receive an average reward/value
-    def simulate(self, node):
-        # Consider distinctly the terminal case
-        if node.is_terminal():
-            node.value = node.game.get_score(self.my_color)
-        else:
-            # If the game continues, run the game until an end is reached
-            score = self.neural_network.simulate(node.game.board.fen_position, self.my_color)
-            back_propagate(node, score)
+        # Get the value associated to the position
+        score = policy[len(policy) - 1]
+        back_propagate(node, score)
