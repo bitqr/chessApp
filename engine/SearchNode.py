@@ -28,6 +28,10 @@ class SearchNode:
     def is_leaf(self):
         return len(self.children) == 0
 
+    # Tells whether node is root
+    def is_root(self):
+        return self.parent is None
+
     # Upper confidence bound is the main criteria for the select() method
     # One big challenge in Monte-Carlo Tree Search methods is the trade-off between
     # exploitation (deeply exploit winning or promising positions) and

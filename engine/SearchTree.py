@@ -1,3 +1,5 @@
+import numpy
+
 from engine import settings, utils
 from engine.SearchNode import SearchNode
 from engine.utils import from_move_to_output_index
@@ -64,11 +66,17 @@ class SearchTree:
             return None
         input_vector = utils.from_fen_to_input_vector(node.game.board.fen_position)
         policy = self.neural_network.evaluate(input_vector)
+        dirichlet_vector = numpy.random.dirichlet(settings.DIRICHLET_NOISE_ALPHA_PARAMETER, len(policy))
         for move in legal_moves:
             temporary_game = Game(node.game.board.fen_position)
             temporary_game.board.apply_move(move, log=False)
             if temporary_game.board.fen_position not in self.states:
-                prior_probability = policy[from_move_to_output_index(move)]
+                output_index = from_move_to_output_index(move)
+                prior_probability = policy[output_index]
+                # If node is root, add Dirichlet noise to add some variability to node selection
+                if node.is_root():
+                    prior_probability = (1. - settings.DIRICHLET_NOISE_RATE) * prior_probability +\
+                                        settings.DIRICHLET_NOISE_RATE * dirichlet_vector[output_index]
                 self.states[temporary_game.board.fen_position] = SearchNode(temporary_game, node, prior_probability)
             node.children[move] = self.states[temporary_game.board.fen_position]
         # Get the value associated to the position
