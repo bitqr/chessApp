@@ -129,4 +129,4 @@ dmypy.json
 .pyre/
 
 # Saved model on disk
-resources/model_parameters/
+resources/model_parameters/example_model
