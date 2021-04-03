@@ -28,5 +28,5 @@ class Engine:
         print('Chosen move = [{0}, {1}]'.format(chosen_move.origin_square.to_string(),
                                                 chosen_move.destination_square.to_string()))
         # Create the pair (input, output) to update the model
-        probability_vector = search_tree.root.create_output_probability_vector()
-        return chosen_move, probability_vector
+        mcts_adapted_policy_vector = search_tree.root.create_output_probability_vector()
+        return chosen_move, mcts_adapted_policy_vector

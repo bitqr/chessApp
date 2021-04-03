@@ -36,10 +36,12 @@ class SearchNode:
     # One big challenge in Monte-Carlo Tree Search methods is the trade-off between
     # exploitation (deeply exploit winning or promising positions) and
     # exploration (explore rarely visited positions)
-    def upper_confidence_bound(self, move, exploration_parameter, prior_probability):
+    def upper_confidence_bound(self, move, exploration_parameter):
         child_node = self.children[move]
-        return child_node.value / (1 + child_node.visit_count) + \
-            exploration_parameter * prior_probability * math.sqrt(self.visit_count) / (1 + child_node.visit_count)
+        if child_node.visit_count == 0.:
+            return math.inf
+        return child_node.value / child_node.visit_count + \
+            exploration_parameter * child_node.probability * math.sqrt(self.visit_count) / (1 + child_node.visit_count)
 
     def to_string(self):
         result = 'Node {0}: ([\n'.format(self.game.board.fen_position)
@@ -49,7 +51,12 @@ class SearchNode:
         return result
 
     def create_output_probability_vector(self):
-        result = numpy.zeros(4165)
+        result = numpy.zeros(4164)
+        norm = 0.
         for child in self.children:
-            result[utils.from_move_to_output_index(child)] = self.children[child].probability
-        return result
+            norm += self.children[child].visit_count
+            result[utils.from_move_to_output_index(child)] = self.children[child].visit_count
+        # Return normalized policy vector
+        if norm == 0.:
+            norm = 1
+        return result / norm

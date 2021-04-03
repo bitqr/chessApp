@@ -1,4 +1,5 @@
 import numpy
+import tensorflow
 
 from engine import settings, utils
 from engine.SearchNode import SearchNode
@@ -32,7 +33,7 @@ class SearchTree:
     def run_simulations(self, node, simulations_count):
         for iteration in range(simulations_count):
             self.search(node)
-            if iteration % 10 == 0:
+            if iteration % 50 == 0:
                 print("Simulation {0}".format(iteration))
 
     def search(self, node):
@@ -65,14 +66,17 @@ class SearchTree:
         if len(legal_moves) == 0:
             return None
         input_vector = utils.from_fen_to_input_vector(node.game.board.fen_position)
-        policy = self.neural_network.evaluate(input_vector)
-        dirichlet_vector = numpy.random.dirichlet(settings.DIRICHLET_NOISE_ALPHA_PARAMETER, len(policy))
+        output_vector = self.neural_network.evaluate(input_vector)
+        policy = output_vector[0]
+        dirichlet_vector = numpy.random.dirichlet(
+            numpy.zeros(policy.shape[1]) + settings.DIRICHLET_NOISE_ALPHA_PARAMETER
+        )
         for move in legal_moves:
             temporary_game = Game(node.game.board.fen_position)
             temporary_game.board.apply_move(move, log=False)
             if temporary_game.board.fen_position not in self.states:
                 output_index = from_move_to_output_index(move)
-                prior_probability = policy[output_index]
+                prior_probability = tensorflow.gather_nd(policy, [0, output_index])
                 # If node is root, add Dirichlet noise to add some variability to node selection
                 if node.is_root():
                     prior_probability = (1. - settings.DIRICHLET_NOISE_RATE) * prior_probability +\
@@ -80,5 +84,5 @@ class SearchTree:
                 self.states[temporary_game.board.fen_position] = SearchNode(temporary_game, node, prior_probability)
             node.children[move] = self.states[temporary_game.board.fen_position]
         # Get the value associated to the position
-        score = policy[len(policy) - 1]
+        score = output_vector[1]
         back_propagate(node, score)

@@ -24,17 +24,33 @@ def choose_move(game, policy_vector):
 
 def initialize_network():
     # Output layer has 4164-components for the policy vector and 1 component for the board evaluation
-    model = keras.Sequential()
-    model.add(keras.Input(shape=(28, 28, 1)))
-    model.add(layers.Conv2D(filters=256, kernel_size=[3, 3], strides=1, input_shape=(28, 28, 1), activation='relu'))
-    model.add(layers.MaxPool2D())
-    model.add(layers.BatchNormalization())
-    model.add(layers.Conv2D(filters=73, kernel_size=[3, 3], strides=1, activation='relu'))
-    model.add(layers.MaxPool2D())
-    model.add(layers.BatchNormalization())
-    model.add(layers.Flatten())
-    model.add(layers.Dense(4165, activation='relu', name='output_layer'))
-    model.compile(loss=keras.losses.MeanSquaredError())
+    chessboard_position_input = keras.Input(shape=(28, 28, 1))
+    convolutional_features = layers.Conv2D(
+        filters=256, kernel_size=[3, 3], strides=1, input_shape=(28, 28, 1), activation='relu', padding='same'
+    )(chessboard_position_input)
+    batch_norm_features = layers.BatchNormalization()(convolutional_features)
+
+    # Move choice policy
+    policy_convolutional_features = layers.Conv2D(
+        filters=20, kernel_size=[3, 3], strides=1, activation='relu', padding='same'
+    )(batch_norm_features)
+    policy_batch_norm_features = layers.BatchNormalization()(policy_convolutional_features)
+    output_policy_flat = layers.Flatten()(policy_batch_norm_features)
+    output_policy = layers.Dense(4164, name='policy_output')(output_policy_flat)
+
+    # Evaluation of the board
+    value_convolutional_features = layers.Conv2D(
+        filters=1, kernel_size=[1, 1], strides=1, activation='relu', padding='same'
+    )(batch_norm_features)
+    value_batch_norm_features = layers.BatchNormalization()(value_convolutional_features)
+    value_batch_norm_features_flat = layers.Flatten()(value_batch_norm_features)
+    value_linear_features = layers.Dense(256)(value_batch_norm_features_flat)
+    output_value = layers.Dense(1, activation='tanh', name='value_output')(value_linear_features)
+    model = keras.Model(inputs=chessboard_position_input, outputs=[output_policy, output_value])
+    model.compile(optimizer='rmsprop', loss={
+        'value_output': keras.losses.MeanSquaredError(),
+        'policy_output': keras.losses.BinaryCrossentropy()
+    })
     return model
 
 
@@ -65,11 +81,15 @@ class NeuralNetwork:
                 simulation_game.apply_draw()
         return simulation_game.get_score(my_color)
 
-    def update(self, input_vector, output_vector):
+    def update(self, input_vector, output_policy_vector, output_score_vector):
         input_vector = tensorflow.convert_to_tensor(input_vector, dtype=tensorflow.float32)
         input_vector = tensorflow.reshape(input_vector, (-1, 28, 28, 1))
-        output_vector = tensorflow.constant(output_vector, dtype=tensorflow.float32)
-        self.model.fit(x=input_vector, y=output_vector)
+        output_policy_vector = tensorflow.convert_to_tensor(output_policy_vector, dtype=tensorflow.float32)
+        output_score_vector = tensorflow.convert_to_tensor(output_score_vector, dtype=tensorflow.float32)
+        self.model.fit(x=input_vector, y={
+            'value_output': output_score_vector,
+            'policy_output': output_policy_vector
+        })
 
     def decide(self, game):
         # 1st step is to convert the FEN string to an input vector
