@@ -65,22 +65,6 @@ def compute_castling_rook_move(move, squares):
     return Move(rook_square, rook_destination_square, squares)
 
 
-def piece_type_to_string(piece_type):
-    if piece_type == PieceType.PAWN:
-        return 'Pawn'
-    if piece_type == PieceType.KNIGHT:
-        return 'Knight'
-    if piece_type == PieceType.BISHOP:
-        return 'Bishop'
-    if piece_type == PieceType.ROOK:
-        return 'Rook'
-    if piece_type == PieceType.QUEEN:
-        return 'Queen'
-    if piece_type == PieceType.KING:
-        return 'King'
-    return 'Nothing'
-
-
 def is_out_of_range(rank):
     return rank < 0 or 7 < rank
 

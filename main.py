@@ -12,7 +12,7 @@ from gui.InputBoxGUI import InputBoxGUI
 from internal.Game import Game
 
 
-def open_main_menu(window):
+def open_main_menu(window, engine_to_use=None):
     pygame.display.init()
     background_image = pygame.sprite.Sprite()
     background_image.image = pygame.image.load("sprites/background.jpeg").convert()
@@ -69,7 +69,7 @@ def open_main_menu(window):
                 run = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if start_game_button.contains_position(event.pos):
-                    return run_color_choice(window, background_group)
+                    return run_color_choice(window, background_group, engine_to_use)
                 if editor_mode_button.contains_position(event.pos):
                     screen.fill(settings.CLEAR_SCREEN_COLOR)
                     background_group.draw(window)
@@ -80,12 +80,12 @@ def open_main_menu(window):
                     if not is_valid_fen(initial_fen_position):
                         initial_fen_position = ''
                     background_group.draw(window)
-                    return run_game(Game(initial_fen_position))
+                    return run_game(Game(initial_fen_position), engine_to_use)
     pygame.quit()
     sys.exit()
 
 
-def run_color_choice(window, background_group):
+def run_color_choice(window, background_group, engine_to_use):
     play_with_white_button = ButtonGUI(
         settings.PLAY_WITH_WHITE_BUTTON_TOP_LEFT_X,
         settings.PLAY_WITH_WHITE_BUTTON_TOP_LEFT_Y,
@@ -119,20 +119,21 @@ def run_color_choice(window, background_group):
                 if play_with_white_button.contains_position(event.pos):
                     screen.fill(settings.CLEAR_SCREEN_COLOR)
                     background_group.draw(window)
-                    return run_game(game, Color.WHITE)
+                    return run_game(game, Color.WHITE, engine_to_use)
                 if play_with_black_button.contains_position(event.pos):
                     screen.fill(settings.CLEAR_SCREEN_COLOR)
                     background_group.draw(window)
-                    return run_game(game, Color.BLACK)
+                    return run_game(game, Color.BLACK, engine_to_use)
 
 
-def run_game(game, player_color=None, advanced_engine=True):
+def run_game(game, player_color=None, engine_to_use=None):
     game_info_window, game_info_group = utils.create_game_info_group(game)
     chessboard = BoardGUI(game.board, settings.SQUARE_SIZE)
     chessboard.initialize_board()
-    engine = AdvancedEngine(saved_model='resources/model_parameters/trained_model') if advanced_engine \
-        else IntermediateEngine(Color.WHITE if player_color == Color.BLACK else Color.BLACK)
     pygame.display.init()
+    # If no engine provided, use the default one
+    if not engine_to_use:
+        engine_to_use = IntermediateEngine(Color.WHITE if player_color == Color.BLACK else Color.BLACK)
     run = True
     restart_button = ButtonGUI(
         settings.START_BUTTON_TOP_LEFT_X,
@@ -166,7 +167,7 @@ def run_game(game, player_color=None, advanced_engine=True):
     held_button = False
     drag_in_progress = False
     if player_color == Color.BLACK:
-        engine_move = engine.choose_move(chessboard.board.game)
+        engine_move = engine_to_use.choose_move(chessboard.board.game)
         utils.perform_engine_move(engine_move, chessboard, game_info_window, player_color)
     while run:
         for event in pygame.event.get():
@@ -179,7 +180,7 @@ def run_game(game, player_color=None, advanced_engine=True):
                     if chessboard.board.game.can_be_drawn():
                         utils.draw_game(game_info_window, chessboard)
                 if restart_button.contains_position(event.pos):
-                    return run_game(Game(), player_color)
+                    return run_game(Game(), player_color, engine_to_use)
                 if resign_button.contains_position(event.pos):
                     if not chessboard.board.game.is_over():
                         utils.resign(game_info_window, chessboard)
@@ -242,7 +243,7 @@ def run_game(game, player_color=None, advanced_engine=True):
         # Perform engine move
         if not chessboard.board.game.is_over() \
                 and chessboard.board.position.color_to_move != player_color:
-            engine_move = engine.choose_move(chessboard.board.game)
+            engine_move = engine_to_use.choose_move(chessboard.board.game)
             utils.perform_engine_move(engine_move, chessboard, game_info_window, player_color)
             restart_button.draw(screen)
             resign_button.draw(screen)
@@ -254,7 +255,8 @@ def run_game(game, player_color=None, advanced_engine=True):
 
 
 if __name__ == '__main__':
+    engine = AdvancedEngine(saved_model='resources/model_parameters/trained_model')
     pygame.init()
     pygame.display.set_caption("Chess App")
     screen = pygame.display.set_mode((settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT))
-    open_main_menu(screen)
+    open_main_menu(screen, engine)
