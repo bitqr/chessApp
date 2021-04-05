@@ -1,5 +1,6 @@
 from engine import settings
 from engine.AdvancedEngine import AdvancedEngine
+from engine.AlphaBetaPruningEngine import AlphaBetaPruningEngine
 from engine.IntermediateEngine import IntermediateEngine
 from gui import utils
 from internal.utils import *
@@ -80,7 +81,10 @@ def open_main_menu(window, engine_to_use=None):
                     if not is_valid_fen(initial_fen_position):
                         initial_fen_position = ''
                     background_group.draw(window)
-                    return run_game(Game(initial_fen_position), engine_to_use)
+                    player_color = None
+                    if engine_to_use:
+                        player_color = Color.WHITE if engine_to_use.color == Color.BLACK else Color.BLACK
+                    return run_game(Game(initial_fen_position), player_color, engine_to_use)
     pygame.quit()
     sys.exit()
 
@@ -133,7 +137,8 @@ def run_game(game, player_color=None, engine_to_use=None):
     pygame.display.init()
     # If no engine provided, use the default one
     if not engine_to_use:
-        engine_to_use = IntermediateEngine(Color.WHITE if player_color == Color.BLACK else Color.BLACK)
+        # engine_to_use = IntermediateEngine(Color.WHITE if player_color == Color.BLACK else Color.BLACK)
+        engine_to_use = AlphaBetaPruningEngine(Color.WHITE if player_color == Color.BLACK else Color.BLACK)
     run = True
     restart_button = ButtonGUI(
         settings.START_BUTTON_TOP_LEFT_X,
@@ -255,8 +260,9 @@ def run_game(game, player_color=None, engine_to_use=None):
 
 
 if __name__ == '__main__':
-    engine = AdvancedEngine(saved_model='resources/model_parameters/trained_model')
+    # engine = AdvancedEngine(saved_model='resources/model_parameters/trained_model')
+    # engine = AlphaBetaPruningEngine(Color.BLACK)
     pygame.init()
     pygame.display.set_caption("Chess App")
     screen = pygame.display.set_mode((settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT))
-    open_main_menu(screen, engine)
+    open_main_menu(screen)

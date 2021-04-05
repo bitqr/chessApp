@@ -1,5 +1,6 @@
 import numpy
 
+from internal.Color import Color
 from internal.Move import Move
 from internal.PieceType import PieceType
 
@@ -246,3 +247,59 @@ def index_to_origin_destination_couple(move_index):
     origin_index = int(move_index / 63)
     destination_index = move_index % 63
     return int(origin_index / 8), origin_index % 8, int(destination_index / 8), destination_index % 8
+
+
+piece_to_value = {
+    PieceType.PAWN: 1,
+    PieceType.KNIGHT: 3,
+    PieceType.BISHOP: 3,
+    PieceType.ROOK: 5,
+    PieceType.QUEEN: 10,
+    PieceType.KING: 0
+}
+
+
+def greedy_evaluation(node, color):
+    if node.game.is_over():
+        if (node.game.white_wins() and color == Color.WHITE) \
+                or (node.game.black_wins() and color == Color.BLACK):
+            return 1000.
+        if (node.game.white_wins() and color == Color.BLACK) \
+                or (node.game.black_wins() and color == Color.WHITE):
+            return -1000.
+    result = 0.
+    engine_opposite_color = Color.WHITE if color == Color.BLACK else Color.BLACK
+    for piece in node.game.board.position.pieces_positions:
+        piece_square = node.game.board.position.pieces_positions[piece]
+        opposite_color = Color.WHITE if piece.color == Color.BLACK else Color.BLACK
+        if piece.color == color:
+            result += piece_to_value[piece.type]
+            if node.game.board.position.is_controlled(piece_square.rank, piece_square.file, opposite_color):
+                result -= piece_to_value[piece.type] / 10.
+        else:
+            result -= piece_to_value[piece.type]
+            if node.game.board.position.is_controlled(piece_square.rank, piece_square.file, color):
+                result += piece_to_value[piece.type] / 10.
+    result += sum(
+        list(map(lambda x: len(x), node.game.board.position.controlled_squares[color].values()))
+    ) / 20.
+    result -= sum(
+        list(map(lambda x: len(x), node.game.board.position.controlled_squares[engine_opposite_color].values()))
+    ) / 20.
+    return result
+
+
+def move_ordering_score(move, squares):
+    if move.is_promotion:
+        return 900
+    if move.is_capture:
+        origin_piece_type = move.piece.type
+        captured_piece_type = squares[move.destination_square.rank, move.destination_square.file].content.type
+        if piece_to_value[origin_piece_type] < piece_to_value[captured_piece_type]:
+            return 500
+        return 100
+    if move.is_en_passant:
+        return 100
+    if move.is_castle:
+        return 150
+    return 50
