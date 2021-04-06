@@ -1,9 +1,10 @@
 from tensorflow import keras
 
-from engine import utils, settings
-from engine.Engine import Engine
-from engine.IntermediateEngine import IntermediateEngine
-from engine.NeuralNetwork import NeuralNetwork
+import settings
+import utils
+from Engine import Engine
+from IntermediateEngine import IntermediateEngine
+from NeuralNetwork import NeuralNetwork
 from internal.Color import Color
 from internal.Game import Game
 
