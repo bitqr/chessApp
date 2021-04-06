@@ -86,3 +86,14 @@ class SearchTree:
         # Get the value associated to the position
         score = output_vector[1]
         back_propagate(node, score)
+
+    def expand_minimax(self, node):
+        legal_moves = node.game.board.position.legal_moves_list()
+        if len(legal_moves) == 0:
+            return
+        for move in legal_moves:
+            temporary_game = Game(node.game.board.fen_position)
+            temporary_game.board.apply_move(move, log=False)
+            if temporary_game.board.fen_position not in self.states:
+                self.states[temporary_game.board.fen_position] = SearchNode(temporary_game, node)
+            node.children[move] = self.states[temporary_game.board.fen_position]

@@ -89,7 +89,7 @@ class NeuralNetwork:
         self.model.fit(x=input_vector, y={
             'value_output': output_score_vector,
             'policy_output': output_policy_vector
-        })
+        }, epochs=10)
 
     def decide(self, game):
         # 1st step is to convert the FEN string to an input vector
@@ -97,9 +97,9 @@ class NeuralNetwork:
         input_vector = tensorflow.convert_to_tensor([input_vector], dtype=tensorflow.float32)
         input_vector = tensorflow.reshape(input_vector, (-1, 28, 28, 1))
         # Get the output policy from the neural net for this position
-        policy_vector = tensorflow.constant(self.evaluate(input_vector))
+        policy_vector = self.evaluate(input_vector)
         # Among all possible moves take the one indicated by the policy vector and apply it
-        return choose_move(game, policy_vector)
+        return choose_move(game, tensorflow.constant(policy_vector[0]))
 
     def save_model(self, file_name):
         self.model.save(file_name)

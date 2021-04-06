@@ -1,0 +1,11 @@
+version: '2.0'
+
+services:
+  model-trainer:
+    build:
+      context: .
+    volumes:
+      - .:/chessApp
+    environment:
+      - PORT=50051
+      - PYTHONPATH=/chessApp/
