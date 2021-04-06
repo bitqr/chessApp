@@ -26,22 +26,24 @@ def initialize_network():
     # Output layer has 4164-components for the policy vector and 1 component for the board evaluation
     chessboard_position_input = keras.Input(shape=(28, 28, 1))
     convolutional_features = layers.Conv2D(
-        filters=256, kernel_size=[3, 3], strides=1, input_shape=(28, 28, 1), activation='relu', padding='same'
+        filters=32, kernel_size=[3, 3], strides=1, input_shape=(28, 28, 1), activation='relu', padding='same'
     )(chessboard_position_input)
     batch_norm_features = layers.BatchNormalization()(convolutional_features)
+    pooled_convolutional_features = layers.MaxPool2D(2, 2)(batch_norm_features)
 
     # Move choice policy
     policy_convolutional_features = layers.Conv2D(
         filters=20, kernel_size=[3, 3], strides=1, activation='relu', padding='same'
-    )(batch_norm_features)
+    )(pooled_convolutional_features)
     policy_batch_norm_features = layers.BatchNormalization()(policy_convolutional_features)
-    output_policy_flat = layers.Flatten()(policy_batch_norm_features)
+    pooled_policy = layers.MaxPool2D(2, 2)(policy_batch_norm_features)
+    output_policy_flat = layers.Flatten()(pooled_policy)
     output_policy = layers.Dense(4164, name='policy_output')(output_policy_flat)
 
     # Evaluation of the board
     value_convolutional_features = layers.Conv2D(
         filters=1, kernel_size=[1, 1], strides=1, activation='relu', padding='same'
-    )(batch_norm_features)
+    )(pooled_convolutional_features)
     value_batch_norm_features = layers.BatchNormalization()(value_convolutional_features)
     value_batch_norm_features_flat = layers.Flatten()(value_batch_norm_features)
     value_linear_features = layers.Dense(256)(value_batch_norm_features_flat)
@@ -89,7 +91,7 @@ class NeuralNetwork:
         self.model.fit(x=input_vector, y={
             'value_output': output_score_vector,
             'policy_output': output_policy_vector
-        }, epochs=10)
+        }, epochs=500)
 
     def decide(self, game):
         # 1st step is to convert the FEN string to an input vector

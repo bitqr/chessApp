@@ -73,7 +73,7 @@ class Move:
 
     def to_string(self, target_piece):
         delimiter = 'x' if target_piece.type != PieceType.NONE or self.is_en_passant else '_'
-        piece_to_display = "Pawn" if self.is_promotion else self.piece.to_string()
+        piece_to_display = '{0}: Pawn'.format(self.piece.color) if self.is_promotion else self.piece.to_string()
         result = \
             '{0}_{1}{2}{3}'.format(
                 piece_to_display, self.origin_square.to_string(), delimiter, self.destination_square.to_string()
