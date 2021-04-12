@@ -1,4 +1,5 @@
 from internal.Game import Game
+from internal.utils import game_result_to_string
 
 game_entire_pgn = '1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. d3 Nf6 5. c3 d6 6. Bb3 a5 7. a4 h6 8. h3 O-O 9. O-O Re8 10. Re1 ' \
                   'Bd7 11. Nbd2 Be6 12. Nc4 Qd7 13. Bd2 Rad8 14. Bc2 Qc8 15. Rc1 Bxh3 16. gxh3 Qxh3 17. Ne3 Bxe3 18. ' \
@@ -12,13 +13,34 @@ game_entire_pgn = '1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. d3 Nf6 5. c3 d6 6. Bb3 a5 7
                   'Ra1 74. e8=Q Ra6+ 75. Kd5 Ra5+ 76. Kc4 Rc5+ 77. Kxc5 Kc1 78. Re2 Kb1 79. Qa4 Kc1 80. Qc2# {Black ' \
                   'checkmated} 1-0'.split(' ')
 
-game = Game()
+FILE_TO_READ = '../../resources/games_database/ficsgamesdb_2017_CvC_nomovetimes_199240.pgn'
 
-move_index = 0
-while not game.is_over():
-    if move_index % 3 == 0:
+
+def play_pgn_game(pgn_string):
+    game = Game()
+
+    move_index = 0
+    while not game.is_over():
+        if pgn_string[move_index][0] == '{':
+            if '50' in pgn_string[move_index:] or 'material' in pgn_string[move_index:]:
+                game.apply_draw()
+                break
+            if 'resigns' in pgn_string[move_index:]:
+                game.apply_resign()
+                break
+        if move_index % 3 == 0:
+            move_index += 1
+        move = game.read_pgn_move(pgn_string[move_index])
+        game.board.apply_move(move)
         move_index += 1
-    move = game.read_pgn_move(game_entire_pgn[move_index])
-    print(move.to_string())
-    game.board.apply_move(move)
-    move_index += 1
+    print(game_result_to_string[game.result])
+
+
+# play_pgn_game(game_entire_pgn)
+
+game_index = 1
+for line in open(FILE_TO_READ, 'r'):
+    print('Game #{0}'.format(game_index))
+    pgn_game = line.split(' ')
+    play_pgn_game(pgn_game)
+    game_index += 1

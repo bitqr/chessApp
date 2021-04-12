@@ -228,7 +228,8 @@ def run_game(game, player_color=None, engine_to_use=None):
                         selected_piece_sprite,
                         target_squares,
                         event.pos,
-                        player_color
+                        player_color,
+                        engine_to_use
                     )
                     selected_piece_sprite = None
                 drag_in_progress = False

@@ -51,21 +51,6 @@ def un_highlight_target_squares(square_sprites):
         square_sprite.un_highlight()
 
 
-def cancel_highlighting_target_squares(square_sprites):
-    for square_sprite in square_sprites:
-        square_sprite.cancel_highlight()
-
-
-def resign(game_info, chessboard):
-    chessboard.board.game.apply_resign()
-    game_info.update_text()
-
-
-def draw_game(game_info, chessboard):
-    chessboard.board.game.apply_draw()
-    game_info.update_text()
-
-
 def perform_move_on_board(
         game_info,
         chessboard,
@@ -73,7 +58,8 @@ def perform_move_on_board(
         destination_square_sprite,
         player_color,
         latest_move=None,
-        promoted_piece=None
+        promoted_piece=None,
+        engine_to_use=None
 ):
     # First, remove check highlighted square and latest move square
     if chessboard.check_highlighted_square_sprite:
@@ -90,11 +76,11 @@ def perform_move_on_board(
     piece_type = promoted_piece
     if move.is_promotion:
         # If it's an engine move, promote automatically
-        if not (player_color and player_color != move.piece.color):
+        if engine_to_use and player_color and player_color != move.piece.color:
+            move.promoted_piece_type = promoted_piece
+        else:
             piece_type = run_pawn_promotion_selection(chessboard, move)
             move.promoted_piece_type = piece_type
-        else:
-            move.promoted_piece_type = promoted_piece
     latest_move = chessboard.board.position.latest_move
     if move.is_capture:
         piece_to_remove = destination_square_sprite.square.content
@@ -124,6 +110,21 @@ def perform_move_on_board(
     end_drag_and_drop_move(chessboard, selected_piece_sprite)
     destination_square_sprite.highlight_latest_move()
     origin_square_sprite.highlight_latest_move()
+
+
+def cancel_highlighting_target_squares(square_sprites):
+    for square_sprite in square_sprites:
+        square_sprite.cancel_highlight()
+
+
+def resign(game_info, chessboard):
+    chessboard.board.game.apply_resign()
+    game_info.update_text()
+
+
+def draw_game(game_info, chessboard):
+    chessboard.board.game.apply_draw()
+    game_info.update_text()
 
 
 def perform_engine_move(engine_move, chessboard, game_info, player_color):
@@ -160,7 +161,8 @@ def release_piece_after_drag_and_drop(
         selected_piece_sprite,
         target_squares,
         event_position,
-        player_color
+        player_color,
+        engine_to_use=None
 ):
     found_square = False
     for square_sprite in target_squares:
@@ -172,7 +174,8 @@ def release_piece_after_drag_and_drop(
                 selected_piece_sprite,
                 square_sprite,
                 player_color,
-                chessboard.board.position.latest_move
+                chessboard.board.position.latest_move,
+                engine_to_use
             )
             break
     if not found_square:

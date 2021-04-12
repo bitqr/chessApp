@@ -117,7 +117,6 @@ class Board:
 
     def determine_check_situation(self, move):
         remaining_moves = len(self.position.legal_moves_list())
-        # print(remaining_moves)
         if self.position.color_to_move == Color.BLACK:
             if self.position.is_in_check(self.black_king):
                 move.is_check = True
