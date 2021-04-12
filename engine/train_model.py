@@ -1,31 +1,73 @@
-from tensorflow import keras
+import os.path
 
-import settings
-import utils
-from Engine import Engine
-from IntermediateEngine import IntermediateEngine
-from NeuralNetwork import NeuralNetwork
-from internal.Color import Color
+import keras as keras
+
+from engine.NeuralNetwork import NeuralNetwork
+from engine.utils import from_fen_to_input_vector, from_move_to_output_index
 from internal.Game import Game
 
+PREFIX_PATH = '../resources/games_database'
+FILES_TO_READ = [
+    'ficsgamesdb_2017_CvC_nomovetimes_199240',
+    'ficsgamesdb_2018_CvC_nomovetimes_199241',
+    'ficsgamesdb_2018_standard2000_nomovetimes_199245',
+    'ficsgamesdb_2019_CvC_nomovetimes_199242',
+    'ficsgamesdb_2019_standard2000_nomovetimes_199246',
+    'ficsgamesdb_2020_CvC_nomovetimes_199243',
+    'ficsgamesdb_2020_standard2000_nomovetimes_199247'
+]
 
-# Self-play game via MCTS
-def mcts_self_play(game, engine):
+
+def pre_process_data():
+    for file_name in FILES_TO_READ:
+        file = open(os.path.join(PREFIX_PATH, file_name + '.pgn',), 'r')
+        output_file = open(os.path.join(PREFIX_PATH, file_name + '_proc.pgn'), 'w')
+        for line in file:
+            if line[:2] == '1.':
+                output_file.write(line)
+        file.close()
+        output_file.close()
+
+
+# pre_process_data()
+
+# Each line in the files is a game pgn
+
+def train_model(neural_net, file):
+    # Load the neural network to train
+    for line in file:
+        test_game = Game()
+        ins, policy_output, score_output = play_database_game(test_game, line)
+        # (state, policy, value) data are used to train the neural network and improve its prediction
+        neural_net.update(ins, policy_output, score_output)
+
+
+def read_move(game, pgn_move, numpy=None):
+    chosen_move = game.read_pgn_move(pgn_move)
+    policy_vector = numpy.zeros(4164)
+    policy_vector[from_move_to_output_index(chosen_move)] = 1.
+    return chosen_move, policy_vector
+
+
+def play_database_game(game, game_pgn=''):
     inputs = []
     policy_outputs = []
     score_outputs = []
     color_to_play = game.board.position.color_to_move
+    moves_pgn_list = game_pgn.split(' ')
+    pgn_move_index = 0
 
     while not game.is_over():
-        input_vector = utils.from_fen_to_input_vector(game.board.fen_position)
+        if pgn_move_index % 3 == 0:
+            pgn_move_index += 1
+        input_vector = from_fen_to_input_vector(game.board.fen_position)
         # One run of MCTS, returning the move and the (p, v) vector associated to the game state
-        played_move, mcts_adapted_policy_vector = engine.run_mcts(game)
+        print(moves_pgn_list[pgn_move_index])
+        played_move, policy_vector = read_move(game, moves_pgn_list[pgn_move_index])
         inputs.append(input_vector)
-        policy_outputs.append(mcts_adapted_policy_vector)
+        policy_outputs.append(policy_vector)
         game.board.apply_move(played_move)
-        if game.can_be_drawn():
-            game.apply_draw()
-            print('Draw')
+        pgn_move_index += 1
 
     # Update the board evaluations with the expected outcomes. Variable index is
     # to denote playing color, to determine perspective for evaluation of the position
@@ -35,53 +77,10 @@ def mcts_self_play(game, engine):
     return inputs, policy_outputs, score_outputs
 
 
-# Self-play game via MCTS
-def play_against_greedy(game, engine, engine_color):
-    inputs = []
-    policy_outputs = []
-    score_outputs = []
-    greedy_engine = IntermediateEngine(Color.BLACK if engine_color == Color.WHITE else Color.WHITE)
-    while not game.is_over():
-        if game.board.position.color_to_move == engine_color:
-            # Engine to play, use MCTS
-            input_vector = utils.from_fen_to_input_vector(game.board.fen_position)
-            # One run of MCTS, returning the move and the (p, v) vector associated to the game state
-            played_move, mcts_adapted_policy_vector = engine.run_mcts(game)
-            inputs.append(input_vector)
-            policy_outputs.append(mcts_adapted_policy_vector)
-        else:
-            # Greedy to play, use intermediate engine move
-            played_move = greedy_engine.choose_move(game)
-        game.board.apply_move(played_move)
-        if game.can_be_drawn():
-            game.apply_draw()
-            print('Draw')
-
-    # Update the board evaluations with the expected outcomes. Variable index is
-    # to denote playing color, to determine perspective for evaluation of the position
-    score = game.get_score(engine_color)
-    for index in range(len(inputs)):
-        score_outputs.append(score)
-    return inputs, policy_outputs, score_outputs
-
-
-def train_model(neural_net, greedy=False):
-    # Load the neural network that MCTS will use to run its simulations
-    test_game = Game()
-    test_engine = Engine(neural_net)
-
-    if greedy:
-        ins, policy_output, score_output = play_against_greedy(test_game, test_engine, Color.WHITE)
-    else:
-        ins, policy_output, score_output = mcts_self_play(test_game, test_engine)
-
-    # (state, policy, value) data are used to train the neural network and improve its prediction
-    neural_net.update(ins, policy_output, score_output)
-
-
-for iteration in range(settings.NUMBER_OF_SELF_PLAY_GAMES):
-    neural_net_model = keras.models.load_model('../resources/model_parameters/trained_model')
-    neural_network = NeuralNetwork(neural_net_model)
-    train_model(neural_network, greedy=False)
-    # Save the model on the disk
-    neural_network.save_model('../resources/model_parameters/trained_model')
+file_to_read = open(os.path.join(PREFIX_PATH, FILES_TO_READ[0] + '.pgn'), 'r')
+neural_net_model = keras.models.load_model('../resources/model_parameters/trained_model')
+neural_network = NeuralNetwork(neural_net_model)
+train_model(neural_network, file_to_read)
+file_to_read.close()
+# Save the model on the disk
+neural_network.save_model('../resources/model_parameters/trained_model')

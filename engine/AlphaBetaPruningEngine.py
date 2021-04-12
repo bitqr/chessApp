@@ -1,6 +1,6 @@
 import math
 
-from engine import settings
+from engine import settings, utils
 from engine.SearchNode import SearchNode
 from engine.SearchTree import SearchTree
 from engine.utils import greedy_evaluation
@@ -35,6 +35,7 @@ class AlphaBetaPruningEngine:
         # If the node is not terminal, generate the legal moves
         explored_moves = 0
         legal_moves = node.game.board.position.legal_moves_list()
+        legal_moves = sorted(legal_moves, key=lambda x: -utils.move_ordering_score(x, node.game.board.squares))
         if node.game.board.position.color_to_move == self.color:
             # Node is a max node
             value = -math.inf

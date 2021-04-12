@@ -1,7 +1,4 @@
 from engine import settings
-from engine.AdvancedEngine import AdvancedEngine
-from engine.AlphaBetaPruningEngine import AlphaBetaPruningEngine
-from engine.IntermediateEngine import IntermediateEngine
 from gui import utils
 from internal.utils import *
 from gui.ButtonGUI import ButtonGUI
@@ -135,10 +132,7 @@ def run_game(game, player_color=None, engine_to_use=None):
     chessboard = BoardGUI(game.board, settings.SQUARE_SIZE)
     chessboard.initialize_board()
     pygame.display.init()
-    # If no engine provided, use the default one
-    if not engine_to_use:
-        # engine_to_use = IntermediateEngine(Color.WHITE if player_color == Color.BLACK else Color.BLACK)
-        engine_to_use = AlphaBetaPruningEngine(Color.WHITE if player_color == Color.BLACK else Color.BLACK)
+    # If no engine provided, play against myself
     run = True
     restart_button = ButtonGUI(
         settings.START_BUTTON_TOP_LEFT_X,
@@ -246,22 +240,21 @@ def run_game(game, player_color=None, engine_to_use=None):
         game_info_group.draw(screen)
         pygame.display.flip()
         # Perform engine move
-        if not chessboard.board.game.is_over() \
-                and chessboard.board.position.color_to_move != player_color:
-            engine_move = engine_to_use.choose_move(chessboard.board.game)
-            utils.perform_engine_move(engine_move, chessboard, game_info_window, player_color)
-            restart_button.draw(screen)
-            resign_button.draw(screen)
-            draw_button.draw(screen)
-            chessboard.draw_board(screen)
-            game_info_group.draw(screen)
+        if engine_to_use:
+            if not chessboard.board.game.is_over() \
+                    and chessboard.board.position.color_to_move != player_color:
+                engine_move = engine_to_use.choose_move(chessboard.board.game)
+                utils.perform_engine_move(engine_move, chessboard, game_info_window, player_color)
+                restart_button.draw(screen)
+                resign_button.draw(screen)
+                draw_button.draw(screen)
+                chessboard.draw_board(screen)
+                game_info_group.draw(screen)
     pygame.quit()
     sys.exit()
 
 
 if __name__ == '__main__':
-    # engine = AdvancedEngine(saved_model='resources/model_parameters/trained_model')
-    # engine = AlphaBetaPruningEngine(Color.BLACK)
     pygame.init()
     pygame.display.set_caption("Chess App")
     screen = pygame.display.set_mode((settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT))

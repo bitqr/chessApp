@@ -71,8 +71,8 @@ class Move:
                and ((self.piece.is_white() and self.destination_square.rank == 0)
                     or (self.piece.is_black() and self.destination_square.rank == 7))
 
-    def to_string(self, target_piece):
-        delimiter = 'x' if target_piece.type != PieceType.NONE or self.is_en_passant else '_'
+    def to_string(self, target_piece=None):
+        delimiter = 'x' if (target_piece and target_piece.type != PieceType.NONE) or self.is_en_passant else '_'
         piece_to_display = '{0}: Pawn'.format(self.piece.color) if self.is_promotion else self.piece.to_string()
         result = \
             '{0}_{1}{2}{3}'.format(

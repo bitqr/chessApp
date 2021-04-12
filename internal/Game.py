@@ -1,8 +1,10 @@
 from internal import utils
 from internal.Board import Board
 from internal.Color import Color
-from internal.Move import piece_type_to_string
+from internal.Move import piece_type_to_string, Move
 from internal.GameResult import GameResult
+from internal.PieceType import PieceType
+from internal.utils import fen_letter_to_piece, CHESSBOARD_FILE_NAMES, pawn_squares
 
 
 class Game:
@@ -99,3 +101,83 @@ class Game:
         if (self.white_wins() and color == Color.WHITE) or (self.black_wins() and color == Color.BLACK):
             return 1
         return -1
+
+    def read_pgn_move(self, pgn_string):
+        color = self.board.position.color_to_move
+        if pgn_string == 'O-O':
+            origin_square = self.board.squares[(7 if color == Color.WHITE else 0, 4)]
+            destination_square = self.board.squares[(7 if color == Color.WHITE else 0, 6)]
+            return Move(origin_square, destination_square, self.board.squares)
+        if pgn_string == 'O-O-O':
+            origin_square = self.board.squares[(7 if color == Color.WHITE else 0, 4)]
+            destination_square = self.board.squares[(7 if color == Color.WHITE else 0, 2)]
+            return Move(origin_square, destination_square, self.board.squares)
+        first_character = str.lower(pgn_string[0])
+        piece_type = PieceType.PAWN
+        if first_character in ['k', 'q', 'b', 'n', 'r']:
+            piece_type = fen_letter_to_piece(first_character)
+            pgn_string = pgn_string[1:]
+        origin_square_file = -1
+        origin_square_rank = -1
+        if len(pgn_string) > 1 \
+                and pgn_string[0] in CHESSBOARD_FILE_NAMES \
+                and pgn_string[1] == 'x' or pgn_string[1] in CHESSBOARD_FILE_NAMES:
+            # Case where the file of the origin square is specified
+            # Find the origin square
+            origin_square_file = CHESSBOARD_FILE_NAMES.index(pgn_string[0])
+            pgn_string = pgn_string[1:]
+        elif len(pgn_string) > 1 \
+                and pgn_string[0] in range(1, 9) \
+                and pgn_string[1] == 'x' or pgn_string[1] in CHESSBOARD_FILE_NAMES:
+            # Case where the rank of the origin square is specified
+            # Find the origin square
+            origin_square_rank = 8 - int(pgn_string[0])
+            pgn_string = pgn_string[1:]
+        elif len(pgn_string) > 2 \
+                and pgn_string[0] in CHESSBOARD_FILE_NAMES \
+                and pgn_string[1] in range(1, 9) \
+                and pgn_string[2] == 'x' or pgn_string[1] in CHESSBOARD_FILE_NAMES:
+            origin_square_file = CHESSBOARD_FILE_NAMES.index(pgn_string[0])
+            origin_square_rank = 8 - int(pgn_string[1])
+            pgn_string = pgn_string[2:]
+        # Check if capture
+        if pgn_string[0] == 'x':
+            pgn_string = pgn_string[1:]
+        # Determine destination square
+        destination_square = self.board.squares[(8 - int(pgn_string[1]), CHESSBOARD_FILE_NAMES.index(pgn_string[0]))]
+        pgn_string = pgn_string[2:]
+        # The origin square must be computed at this point
+        if origin_square_rank < 0 or origin_square_file < 0:
+            if origin_square_file >= 0:
+                for rank in range(0, 8):
+                    current_piece = self.board.squares[(rank, origin_square_file)].content
+                    if current_piece.color == color and current_piece.type == piece_type:
+                        origin_square_rank = rank
+                        break
+            elif origin_square_rank >= 0:
+                for file in range(0, 8):
+                    current_piece = self.board.squares[(origin_square_rank, file)].content
+                    if current_piece.color == color and current_piece.type == piece_type:
+                        origin_square_file = file
+                        break
+            else:
+                # We have to find the square by looking at the board
+                for piece in self.board.position.pieces_positions:
+                    piece_square = self.board.position.pieces_positions[piece]
+                    if piece.color == color and piece.type == piece_type and (
+                            (piece.is_pawn() and (destination_square.rank, destination_square.file) in pawn_squares(
+                                piece, piece_square, self.board.squares, self.board.position.latest_move))
+                            or (destination_square.rank, destination_square.file) in
+                            self.board.position.controlled_squares[color][piece]):
+                        origin_square_rank = piece_square.rank
+                        origin_square_file = piece_square.file
+                        break
+        move = Move(
+            self.board.squares[(origin_square_rank, origin_square_file)],
+            destination_square,
+            self.board.squares
+        )
+        if len(pgn_string) > 1 and pgn_string[0] == '=':
+            # Promotion case, keep the promoted piece type
+            move.promoted_piece_type = fen_letter_to_piece(pgn_string[1])
+        return move

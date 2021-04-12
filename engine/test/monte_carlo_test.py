@@ -2,7 +2,7 @@ from tensorflow import keras
 
 from engine.Engine import Engine
 from engine.NeuralNetwork import NeuralNetwork
-from engine.train_model import mcts_self_play
+from engine.train_model_self_play import mcts_self_play
 from internal.Game import Game
 
 

@@ -91,7 +91,7 @@ class NeuralNetwork:
         self.model.fit(x=input_vector, y={
             'value_output': output_score_vector,
             'policy_output': output_policy_vector
-        }, epochs=500)
+        }, epochs=150)
 
     def decide(self, game):
         # 1st step is to convert the FEN string to an input vector
