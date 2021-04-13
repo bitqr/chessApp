@@ -33,13 +33,17 @@ def pre_process_data():
 
 # Each line in the files is a game pgn
 
-def train_model(neural_net, file):
-    # Load the neural network to train
+def train_model(neural_net, file, saving_frequency):
+    game_iteration = 0
     for line in file:
         test_game = Game()
         ins, policy_output, score_output = play_database_game(test_game, line)
         # (state, policy, value) data are used to train the neural network and improve its prediction
         neural_net.update(ins, policy_output, score_output)
+        # Save the model on the disk
+        if game_iteration % saving_frequency == 0:
+            neural_network.save_model('../resources/model_parameters/trained_model')
+        game_iteration += 1
 
 
 def read_move(game, pgn_move, numpy=None):
@@ -58,11 +62,17 @@ def play_database_game(game, game_pgn=''):
     pgn_move_index = 0
 
     while not game.is_over():
+        if moves_pgn_list[pgn_move_index][0] == '{':
+            if 'ran' in moves_pgn_list[pgn_move_index:] \
+                    or 'drawn' in moves_pgn_list[pgn_move_index:] or 'material}' in moves_pgn_list[pgn_move_index:]:
+                game.apply_draw()
+                break
+            if 'resigns}' in moves_pgn_list[pgn_move_index:] or 'forfeits' in moves_pgn_list[pgn_move_index:]:
+                game.apply_resign()
+                break
         if pgn_move_index % 3 == 0:
             pgn_move_index += 1
         input_vector = from_fen_to_input_vector(game.board.fen_position)
-        # One run of MCTS, returning the move and the (p, v) vector associated to the game state
-        print(moves_pgn_list[pgn_move_index])
         played_move, policy_vector = read_move(game, moves_pgn_list[pgn_move_index])
         inputs.append(input_vector)
         policy_outputs.append(policy_vector)
@@ -80,7 +90,5 @@ def play_database_game(game, game_pgn=''):
 file_to_read = open(os.path.join(PREFIX_PATH, FILES_TO_READ[0] + '.pgn'), 'r')
 neural_net_model = keras.models.load_model('../resources/model_parameters/trained_model')
 neural_network = NeuralNetwork(neural_net_model)
-train_model(neural_network, file_to_read)
+train_model(neural_network, file_to_read, saving_frequency=1000)
 file_to_read.close()
-# Save the model on the disk
-neural_network.save_model('../resources/model_parameters/trained_model')

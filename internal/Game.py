@@ -44,10 +44,11 @@ class Game:
     def apply_draw(self):
         if self.can_be_drawn_by_fifty_move_rule:
             self.result = GameResult.DRAW_BY_50_MOVE_RULE
-            self.end()
-        if self.can_be_drawn_by_threefold_repetition:
+        elif self.can_be_drawn_by_threefold_repetition:
             self.result = GameResult.DRAW_BY_MOVE_REPEAT
-            self.end()
+        else:
+            self.result = GameResult.DRAW_BY_MUTUAL_AGREEMENT
+        self.end()
 
     def to_string(self):
         result = 'Captured pieces:\nBlack:\n'
@@ -104,13 +105,15 @@ class Game:
 
     def read_pgn_move(self, pgn_string):
         color = self.board.position.color_to_move
-        if pgn_string == 'O-O':
-            origin_square = self.board.squares[(7 if color == Color.WHITE else 0, 4)]
-            destination_square = self.board.squares[(7 if color == Color.WHITE else 0, 6)]
-            return Move(origin_square, destination_square, self.board.squares)
-        if pgn_string == 'O-O-O':
+        if 'O-O-O' in pgn_string:
+            # Queen-side castle
             origin_square = self.board.squares[(7 if color == Color.WHITE else 0, 4)]
             destination_square = self.board.squares[(7 if color == Color.WHITE else 0, 2)]
+            return Move(origin_square, destination_square, self.board.squares)
+        elif 'O-O' in pgn_string:
+            # King-side castle
+            origin_square = self.board.squares[(7 if color == Color.WHITE else 0, 4)]
+            destination_square = self.board.squares[(7 if color == Color.WHITE else 0, 6)]
             return Move(origin_square, destination_square, self.board.squares)
         first_character = pgn_string[0]
         piece_type = PieceType.PAWN
@@ -151,7 +154,7 @@ class Game:
         if piece_type == PieceType.PAWN and not is_capture:
             origin_square_file = destination_square.file
             if color == Color.WHITE:
-                offset = 2 if\
+                offset = 2 if \
                     self.board.squares[(destination_square.rank + 1, destination_square.file)].is_free() else 1
                 origin_square_rank = destination_square.rank + offset
             else:
@@ -181,11 +184,13 @@ class Game:
                 # We have to find the square by looking at the board
                 for piece in self.board.position.pieces_positions:
                     piece_square = self.board.position.pieces_positions[piece]
-                    if piece.color == color and piece.type == piece_type and (
-                            (piece.is_pawn() and (destination_square.rank, destination_square.file) in pawn_squares(
-                                piece, piece_square, self.board.squares, self.board.position.latest_move))
-                            or (destination_square.rank, destination_square.file) in
-                            self.board.position.controlled_squares[color][piece]):
+                    if piece.color == color \
+                            and piece.type == piece_type \
+                            and ((piece.is_pawn() and (destination_square.rank, destination_square.file) in
+                                  pawn_squares(piece, piece_square, self.board.squares,
+                                               self.board.position.latest_move))
+                                 or (destination_square.rank, destination_square.file) in
+                                 self.board.position.legal_moves[piece]):
                         origin_square_rank = piece_square.rank
                         origin_square_file = piece_square.file
                         break
