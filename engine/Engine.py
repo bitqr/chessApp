@@ -1,14 +1,25 @@
 import math
 
+import keras
+
 from engine import settings
+from engine.NeuralNetwork import NeuralNetwork
 from engine.SearchNode import SearchNode
 from engine.SearchTree import SearchTree
 
 
 class Engine:
 
-    def __init__(self, neural_net):
-        self.neural_network = neural_net
+    def __init__(self, neural_network=None, saved_model=''):
+        if neural_network:
+            self.neural_network = neural_network
+        else:
+            model = keras.models.load_model(saved_model)
+            self.neural_network = NeuralNetwork(model)
+
+    def choose_move(self, game):
+        chosen_move, policy_vector = self.run_mcts(game)
+        return chosen_move
 
     def run_mcts(self, game):
         search_tree = SearchTree(game.board.fen_position, settings.EXPLORATION_PARAMETER, self.neural_network)
