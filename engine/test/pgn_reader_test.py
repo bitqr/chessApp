@@ -1,24 +1,43 @@
 from internal.Game import Game
+from internal.utils import game_result_to_string
 
-game_entire_pgn = '1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. d3 Nf6 5. c3 d6 6. Bb3 a5 7. a4 h6 8. h3 O-O 9. O-O Re8 10. Re1 ' \
-                  'Bd7 11. Nbd2 Be6 12. Nc4 Qd7 13. Bd2 Rad8 14. Bc2 Qc8 15. Rc1 Bxh3 16. gxh3 Qxh3 17. Ne3 Bxe3 18. ' \
-                  'Rxe3 Ng4 19. Qf1 Qxf1+ 20. Kxf1 Nxe3+ 21. Bxe3 g5 22. d4 Kg7 23. Nd2 b6 24. Bd3 Ne7 25. Bb5 Rf8 ' \
-                  '26. Nc4 c6 27. Ba6 Ra8 28. Bb7 Ra7 29. Nxd6 Rb8 30. dxe5 Rbxb7 31. Nxb7 Rxb7 32. b4 Ng6 33. e6 ' \
-                  'fxe6 34. Rb1 axb4 35. cxb4 Rb8 36. Ra1 Kf7 37. a5 c5 38. Rc1 Ke8 39. axb6 Rxb6 40. Bxc5 Rb7 41. ' \
-                  'Rb1 Rb5 42. Ke2 Kf7 43. Ke3 h5 44. Kd4 g4 45. Bd6 Ke8 46. Kc4 Rg5 47. b5 Kd7 48. Rd1 Kc8 49. Kb4 ' \
-                  'Ne5 50. Rc1+ Kd7 51. Bxe5 Rxe5 52. Rc4 Rg5 53. b6 g3 54. fxg3 Rxg3 55. Rc7+ Kd8 56. e5 h4 57. Rc4 ' \
-                  'Kd7 58. b7 Rg1 59. b8=N+ Kd8 60. Kc5 Kc7 61. Na6+ Kb7 62. Nb4 Rg5 63. Kd6 h3 64. Rh4 Kb6 65. Kxe6 ' \
-                  'Kc5 66. Rxh3 Kxb4 67. Kd6 Rg2 68. Rh4+ Ka3 69. e6 Rg6 70. Re4 Kb2 71. Kd7 Rg1 72. e7 Rd1+ 73. Ke6 ' \
-                  'Ra1 74. e8=Q Ra6+ 75. Kd5 Ra5+ 76. Kc4 Rc5+ 77. Kxc5 Kc1 78. Re2 Kb1 79. Qa4 Kc1 80. Qc2# {Black ' \
-                  'checkmated} 1-0'.split(' ')
+game_entire_pgn = '1. e3 e5 2. d4 e4 3. c4 Nf6 4. Nc3 Bb4 5. Ne2 b6 6. Bd2 Bb7 7. a3 Bd6 8. Nb5 O-O 9. Nxd6 cxd6 10. ' \
+                  'd5 Na6 11. Nd4 Nc7 12. a4 Qe7 13. g4 Qe5 14. Bc3 Qg5 15. Be2 Rae8 16. Nf5 Na6 17. h4 Qg6 18. h5 ' \
+                  'Qg5 19. h6 Re5 20. hxg7 Rb8 21. Nxd6 Nc5 22. b4 Nd3+ 23. Bxd3 exd3 24. Qxd3 Ba6 25. O-O-O Rxd5 26. '\
+                  'Bxf6 Rxd3 27. Bxg5 Rxd1+ 28. Kxd1 Kxg7 29. Bh6+ Kg6 30. Bf4 Rd8 31. g5 Ra8 32. Rh6+ Kg7 33. b5 ' \
+                  'Bxb5 34. cxb5 a6 35. Be5+ Kg8 36. Rf6 Kg7 37. Rxf7+ Kg6 38. Rf6+ Kxg5 39. f3 h5 40. Ne4+ Kh4 41. ' \
+                  'Rg6 axb5 42. Nf2 Ra5 43. Bf6# {Black checkmated} 1-0'.split(' ')
 
-game = Game()
+FILE_TO_READ = '../../resources/games_database/ficsgamesdb_2017_CvC_nomovetimes_199240.pgn'
 
-move_index = 0
-while not game.is_over():
-    if move_index % 3 == 0:
+
+def play_pgn_game(pgn_string):
+    game = Game()
+    move_index = 0
+    while not game.is_over():
+        if pgn_string[move_index][0] == '{':
+            if 'ran' in pgn_string[move_index:] \
+                    or 'drawn' in pgn_string[move_index:] or 'material}' in pgn_string[move_index:]:
+                game.apply_draw()
+                break
+            if 'resigns}' in pgn_string[move_index:] or 'forfeits' in pgn_string[move_index:]:
+                game.apply_resign()
+                break
+        if move_index % 3 == 0:
+            move_index += 1
+        move = game.read_pgn_move(pgn_string[move_index])
+        game.board.apply_move(move)
         move_index += 1
-    move = game.read_pgn_move(game_entire_pgn[move_index])
-    print(move.to_string())
-    game.board.apply_move(move)
-    move_index += 1
+    print(game_result_to_string[game.result])
+
+
+play_pgn_game(game_entire_pgn)
+starting_point = 0
+
+game_index = 1
+for line in open(FILE_TO_READ, 'r'):
+    print('Game #{0}'.format(game_index))
+    if game_index > starting_point:
+        pgn_game = line.split(' ')
+        play_pgn_game(pgn_game)
+    game_index += 1

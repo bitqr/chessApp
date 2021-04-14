@@ -18,6 +18,10 @@ def piece_type_to_string(piece_type):
     return 'Nothing'
 
 
+def piece_color_to_string(piece_color):
+    return 'Black' if piece_color == Color.BLACK else 'White'
+
+
 def base_rank_index(piece_color):
     if piece_color == Color.WHITE:
         return 7
@@ -73,7 +77,8 @@ class Move:
 
     def to_string(self, target_piece=None):
         delimiter = 'x' if (target_piece and target_piece.type != PieceType.NONE) or self.is_en_passant else '_'
-        piece_to_display = '{0}: Pawn'.format(self.piece.color) if self.is_promotion else self.piece.to_string()
+        piece_to_display = '{0}: Pawn'.format(piece_color_to_string(self.piece.color)) \
+            if self.is_promotion else self.piece.to_string()
         result = \
             '{0}_{1}{2}{3}'.format(
                 piece_to_display, self.origin_square.to_string(), delimiter, self.destination_square.to_string()
@@ -81,9 +86,9 @@ class Move:
         if self.is_promotion:
             result += '({0})'.format(piece_type_to_string(self.promoted_piece_type))
         if self.is_king_side_castle:
-            return 'O-O'
+            return '{0}: O-O'.format(piece_color_to_string(self.piece.color))
         if self.is_queen_side_castle:
-            return 'O-O-O'
+            return '{0}: O-O-O'.format(piece_color_to_string(self.piece.color))
         if self.is_check:
             result += '+'
         return result

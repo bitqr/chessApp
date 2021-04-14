@@ -1,4 +1,5 @@
 from engine import settings
+from engine.Engine import Engine
 from gui import utils
 from internal.utils import *
 from gui.ButtonGUI import ButtonGUI
@@ -228,7 +229,8 @@ def run_game(game, player_color=None, engine_to_use=None):
                         selected_piece_sprite,
                         target_squares,
                         event.pos,
-                        player_color
+                        player_color,
+                        engine_to_use
                     )
                     selected_piece_sprite = None
                 drag_in_progress = False
@@ -256,6 +258,7 @@ def run_game(game, player_color=None, engine_to_use=None):
 
 if __name__ == '__main__':
     pygame.init()
+    engine = Engine(saved_model='resources/model_parameters/trained_model')
     pygame.display.set_caption("Chess App")
     screen = pygame.display.set_mode((settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT))
-    open_main_menu(screen)
+    open_main_menu(screen, engine)

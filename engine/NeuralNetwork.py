@@ -13,7 +13,7 @@ def choose_move(game, policy_vector):
     # In this method we loop over all legal moves in the current position
     # And keep the one that has the best value in the policy vector
     chosen_move = None
-    current_value = - math.inf
+    current_value = -math.inf
     for move in game.board.position.legal_moves_list():
         move_evaluation = tensorflow.gather_nd(policy_vector, [0, utils.from_move_to_output_index(move)])
         if move_evaluation > current_value:
@@ -91,7 +91,7 @@ class NeuralNetwork:
         self.model.fit(x=input_vector, y={
             'value_output': output_score_vector,
             'policy_output': output_policy_vector
-        }, epochs=150)
+        }, epochs=50)
 
     def decide(self, game):
         # 1st step is to convert the FEN string to an input vector
