@@ -132,7 +132,9 @@ def perform_engine_move(engine_move, chessboard, game_info, player_color):
         chessboard.board.game.apply_draw()
         game_info.update_text()
     else:
-        selected_piece_sprite = chessboard.piece_sprites[engine_move.piece]
+        piece_to_move =\
+            chessboard.board.squares[(engine_move.origin_square.rank, engine_move.origin_square.file)].content
+        selected_piece_sprite = chessboard.piece_sprites[piece_to_move]
         origin_square_sprite = chessboard.current_square_sprite(selected_piece_sprite)
         destination_square_sprite = \
             chessboard.square_sprites[(engine_move.destination_square.rank, engine_move.destination_square.file)]

@@ -18,6 +18,9 @@ class Engine:
             self.neural_network = NeuralNetwork(model)
 
     def choose_move(self, game):
+        legal_moves = game.board.position.legal_moves_list()
+        if len(legal_moves) == 1:
+            return legal_moves[0]
         chosen_move, policy_vector = self.run_mcts(game)
         return chosen_move
 
