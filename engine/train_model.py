@@ -9,7 +9,7 @@ from engine.utils import from_fen_to_input_vector, from_move_to_output_index
 from internal.Game import Game
 from internal.utils import game_result_to_string
 
-FILE_INDEX = 0
+FILE_INDEX = 1
 START_GAME_INDEX = 8000
 FILES_TO_READ = [
     'ficsgamesdb_2017_CvC_nomovetimes_199240',
