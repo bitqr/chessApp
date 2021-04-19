@@ -4,7 +4,7 @@ import os
 from internal.Color import Color
 from internal.Game import Game
 
-FILE_INDEX = 1
+FILE_INDEX = 2
 START_GAME_INDEX = 0
 END_GAME_INDEX = 30000
 FILES_TO_READ = [
