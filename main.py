@@ -1,5 +1,5 @@
 from engine import settings
-from engine.Engine import Engine
+from engine.DataDrivenEngine import DataDrivenEngine
 from gui import utils
 from internal.utils import *
 from gui.ButtonGUI import ButtonGUI
@@ -121,10 +121,12 @@ def run_color_choice(window, background_group, engine_to_use):
                 if play_with_white_button.contains_position(event.pos):
                     screen.fill(settings.CLEAR_SCREEN_COLOR)
                     background_group.draw(window)
+                    engine_to_use.color = Color.BLACK
                     return run_game(game, Color.WHITE, engine_to_use)
                 if play_with_black_button.contains_position(event.pos):
                     screen.fill(settings.CLEAR_SCREEN_COLOR)
                     background_group.draw(window)
+                    engine_to_use.color = Color.BLACK
                     return run_game(game, Color.BLACK, engine_to_use)
 
 
@@ -258,7 +260,7 @@ def run_game(game, player_color=None, engine_to_use=None):
 
 if __name__ == '__main__':
     pygame.init()
-    engine = Engine(saved_model='resources/model_parameters/trained_model')
+    engine = DataDrivenEngine()
     pygame.display.set_caption("Chess App")
     screen = pygame.display.set_mode((settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT))
     open_main_menu(screen, engine)

@@ -4,6 +4,7 @@ from engine import settings, utils
 from engine.SearchNode import SearchNode
 from engine.SearchTree import SearchTree
 from engine.utils import greedy_evaluation
+from internal.Color import Color
 from internal.Game import Game
 from internal.Move import Move
 
@@ -14,7 +15,7 @@ from internal.Move import Move
 # Beats Stockfish 13 Level 2 (1100 Elo)
 class AlphaBetaPruningEngine:
 
-    def __init__(self, color):
+    def __init__(self, color=Color.WHITE):
         self.color = color
         self.search_tree = None
         self.depth = settings.ALPHA_BETA_PRUNING_DEPTH
