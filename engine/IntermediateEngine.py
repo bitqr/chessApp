@@ -3,6 +3,7 @@ import math
 from engine import settings
 from engine.SearchTree import SearchTree
 from engine.utils import greedy_evaluation
+from internal.Color import Color
 from internal.Move import Move
 
 
@@ -13,7 +14,7 @@ from internal.Move import Move
 # But cannot defeat Stockfish Level 3 (1400 Elo)
 class IntermediateEngine:
 
-    def __init__(self, color):
+    def __init__(self, color=Color.WHITE):
         self.color = color
         self.search_tree = None
         self.depth = settings.MINIMAX_SEARCH_DEPTH

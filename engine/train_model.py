@@ -10,7 +10,7 @@ from internal.Game import Game
 from internal.utils import game_result_to_string
 
 FILE_INDEX = 1
-START_GAME_INDEX = 8000
+START_GAME_INDEX = 0
 FILES_TO_READ = [
     'ficsgamesdb_2017_CvC_nomovetimes_199240',
     'ficsgamesdb_2018_CvC_nomovetimes_199241',
@@ -74,10 +74,9 @@ def play_database_game(game, game_pgn=''):
             if 'ran' in moves_pgn_list[pgn_move_index:] \
                     or 'drawn' in moves_pgn_list[pgn_move_index:] or 'material}' in moves_pgn_list[pgn_move_index:]:
                 game.apply_draw()
-                break
             if 'resigns}' in moves_pgn_list[pgn_move_index:] or 'forfeits' in moves_pgn_list[pgn_move_index:]:
                 game.apply_resign()
-                break
+            break
         if pgn_move_index % 3 == 0:
             pgn_move_index += 1
         input_vector = from_fen_to_input_vector(game.board.fen_position)

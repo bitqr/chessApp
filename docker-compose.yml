@@ -9,3 +9,4 @@ services:
     environment:
       - PORT=50051
       - PYTHONPATH=/chessApp/
+      - DISPLAY
