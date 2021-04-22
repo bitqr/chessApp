@@ -139,7 +139,7 @@ class Game:
         elif len(pgn_string) > 2 \
                 and pgn_string[0] in CHESSBOARD_FILE_NAMES \
                 and str.isnumeric(pgn_string[1]) and int(pgn_string[1]) in range(1, 9) \
-                and (pgn_string[2] == 'x' or pgn_string[1] in CHESSBOARD_FILE_NAMES):
+                and (pgn_string[2] == 'x' or pgn_string[2] in CHESSBOARD_FILE_NAMES):
             origin_square_file = CHESSBOARD_FILE_NAMES.index(pgn_string[0])
             origin_square_rank = 8 - int(pgn_string[1])
             pgn_string = pgn_string[2:]
@@ -171,13 +171,17 @@ class Game:
                 else:
                     for rank in range(0, 8):
                         current_piece = self.board.squares[(rank, origin_square_file)].content
-                        if current_piece.color == color and current_piece.type == piece_type:
+                        if current_piece.color == color and current_piece.type == piece_type \
+                                and (destination_square.rank, destination_square.file) \
+                                in self.board.position.legal_moves[current_piece]:
                             origin_square_rank = rank
                             break
             elif origin_square_rank >= 0:
                 for file in range(0, 8):
                     current_piece = self.board.squares[(origin_square_rank, file)].content
-                    if current_piece.color == color and current_piece.type == piece_type:
+                    if current_piece.color == color and current_piece.type == piece_type \
+                            and (destination_square.rank, destination_square.file) \
+                            in self.board.position.legal_moves[current_piece]:
                         origin_square_file = file
                         break
             else:

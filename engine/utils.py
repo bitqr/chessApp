@@ -265,7 +265,8 @@ def greedy_evaluation(node, color):
                 or (node.game.black_wins() and color == Color.BLACK):
             return 1000.
         if (node.game.white_wins() and color == Color.BLACK) \
-                or (node.game.black_wins() and color == Color.WHITE):
+                or (node.game.black_wins() and color == Color.WHITE) \
+                or node.game.is_draw():
             return -1000.
     result = 0.
     engine_opposite_color = Color.WHITE if color == Color.BLACK else Color.BLACK

@@ -1,12 +1,13 @@
 import psycopg2
 import os
 
+from engine.settings import USER, DATABASE, PASSWORD, HOST
 from internal.Color import Color
 from internal.Game import Game
 
-FILE_INDEX = 2
+FILE_INDEX = 6
 START_GAME_INDEX = 0
-END_GAME_INDEX = 30000
+END_GAME_INDEX = 79000
 FILES_TO_READ = [
     'ficsgamesdb_2017_CvC_nomovetimes_199240',
     'ficsgamesdb_2018_CvC_nomovetimes_199241',
@@ -17,12 +18,6 @@ FILES_TO_READ = [
     'ficsgamesdb_2020_standard2000_nomovetimes_199247'
 ]
 PREFIX_PATH = '../resources/games_database'
-
-USER = 'abdel'
-PASSWORD = 'chessapp'
-HOST = 'localhost'
-PORT = '5432'
-DATABASE = 'bestMoves'
 
 
 def create_database():
@@ -89,6 +84,11 @@ def populate_database(file, saving_frequency):
 
 
 # create_database()
-file_to_read = open(os.path.join(PREFIX_PATH, FILES_TO_READ[FILE_INDEX] + '.pgn'), 'r')
-populate_database(file_to_read, saving_frequency=100)
-file_to_read.close()
+
+def run_populate(file_name):
+    file_to_read = open(file_name, 'r')
+    populate_database(file_to_read, saving_frequency=100)
+    file_to_read.close()
+
+
+run_populate(os.path.join(PREFIX_PATH, FILES_TO_READ[FILE_INDEX] + '.pgn'))

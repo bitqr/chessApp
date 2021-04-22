@@ -83,6 +83,7 @@ def open_main_menu(window, engine_to_use=None):
                     if engine_to_use:
                         player_color = Color.WHITE if engine_to_use.color == Color.BLACK else Color.BLACK
                     return run_game(Game(initial_fen_position), player_color, engine_to_use)
+    engine.close_db_connection()
     pygame.quit()
     sys.exit()
 
@@ -114,6 +115,7 @@ def run_color_choice(window, background_group, engine_to_use):
         pygame.display.flip()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                engine.close_db_connection()
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -121,12 +123,12 @@ def run_color_choice(window, background_group, engine_to_use):
                 if play_with_white_button.contains_position(event.pos):
                     screen.fill(settings.CLEAR_SCREEN_COLOR)
                     background_group.draw(window)
-                    engine_to_use.color = Color.BLACK
+                    engine_to_use.set_color(Color.BLACK)
                     return run_game(game, Color.WHITE, engine_to_use)
                 if play_with_black_button.contains_position(event.pos):
                     screen.fill(settings.CLEAR_SCREEN_COLOR)
                     background_group.draw(window)
-                    engine_to_use.color = Color.BLACK
+                    engine_to_use.set_color(Color.WHITE)
                     return run_game(game, Color.BLACK, engine_to_use)
 
 
@@ -254,6 +256,7 @@ def run_game(game, player_color=None, engine_to_use=None):
                 draw_button.draw(screen)
                 chessboard.draw_board(screen)
                 game_info_group.draw(screen)
+    engine.close_db_connection()
     pygame.quit()
     sys.exit()
 
@@ -264,3 +267,4 @@ if __name__ == '__main__':
     pygame.display.set_caption("Chess App")
     screen = pygame.display.set_mode((settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT))
     open_main_menu(screen, engine)
+    engine.close_db_connection()

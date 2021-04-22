@@ -1,7 +1,7 @@
 import psycopg2
 
-from engine import populate
 from engine.AlphaBetaPruningEngine import AlphaBetaPruningEngine
+from engine.settings import DATABASE, USER, HOST, PASSWORD
 from internal.Color import Color
 
 
@@ -25,13 +25,17 @@ class DataDrivenEngine:
     def __init__(self, color=Color.WHITE):
         self.color = color
         self.connection = psycopg2.connect(
-            dbname=populate.DATABASE,
-            user=populate.USER,
-            host=populate.HOST,
-            password=populate.PASSWORD
+            dbname=DATABASE,
+            user=USER,
+            host=HOST,
+            password=PASSWORD
         )
         self.cursor = self.connection.cursor()
         self.auxiliaryEngine = AlphaBetaPruningEngine(color)
+
+    def set_color(self, color):
+        self.color = color
+        self.auxiliaryEngine.color = color
 
     def close_db_connection(self):
         self.cursor.close()
@@ -45,5 +49,6 @@ class DataDrivenEngine:
             return self.auxiliaryEngine.choose_move(game)
         else:
             # There are proposed legal moves
+            print(move_suggestions)
             pgn_move = choose_move_from_db(move_suggestions)
             return game.read_pgn_move(pgn_move)
