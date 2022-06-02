@@ -21,6 +21,7 @@ FILES_TO_READ = [
     'ficsgamesdb_2020_standard2000_nomovetimes_199247'
 ]
 PREFIX_PATH = '../resources/games_database'
+TRAINED_MODEL_PATH = '../resources/model_parameters/trained_model'
 
 
 def pre_process_data():
@@ -49,9 +50,9 @@ def train_model(neural_net, file, saving_frequency):
             neural_net.update(ins, policy_output, score_output)
             # Save the model on the disk
             if game_iteration % saving_frequency == 0:
-                neural_network.save_model('../resources/model_parameters/trained_model')
+                neural_network.save_model(TRAINED_MODEL_PATH)
         game_iteration += 1
-    neural_network.save_model('../resources/model_parameters/trained_model')
+    neural_network.save_model(TRAINED_MODEL_PATH)
 
 
 def read_move(game, pgn_move):
@@ -96,7 +97,7 @@ def play_database_game(game, game_pgn=''):
 
 
 file_to_read = open(os.path.join(PREFIX_PATH, FILES_TO_READ[FILE_INDEX] + '.pgn'), 'r')
-neural_net_model = keras.models.load_model('../resources/model_parameters/trained_model')
+neural_net_model = keras.models.load_model(TRAINED_MODEL_PATH)
 neural_network = NeuralNetwork(neural_net_model)
 train_model(neural_network, file_to_read, saving_frequency=1000)
 file_to_read.close()

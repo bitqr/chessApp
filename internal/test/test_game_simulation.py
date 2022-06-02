@@ -14,4 +14,3 @@ def display_search_tree_root(search_tree):
 
 engine = Engine()
 engine.choose_move(Game())
-display_search_tree_root(engine.search_tree)

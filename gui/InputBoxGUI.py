@@ -26,18 +26,17 @@ class InputBoxGUI(ButtonGUI):
             else:
                 self.active = False
             self.color = settings.INPUT_BOX_ACTIVE_COLOR if self.active else settings.INPUT_BOX_INACTIVE_COLOR
-        if event.type == pygame.KEYDOWN:
-            if self.active:
-                keys = pygame.key.get_pressed()
-                if event.key == pygame.K_BACKSPACE:
-                    self.text = self.text[:-1]
+        if event.type == pygame.KEYDOWN and self.active:
+            keys = pygame.key.get_pressed()
+            if event.key == pygame.K_BACKSPACE:
+                self.text = self.text[:-1]
+            else:
+                if keys[pygame.K_LCTRL] and keys[pygame.K_v]:
+                    self.text = clipboard.paste()
                 else:
-                    if keys[pygame.K_LCTRL] and keys[pygame.K_v]:
-                        self.text = clipboard.paste()
-                    else:
-                        self.text += event.unicode
-                # Re-render the text
-                self.text_surface = self.font.render(self.text, True, self.text_color)
+                    self.text += event.unicode
+            # Re-render the text
+            self.text_surface = self.font.render(self.text, True, self.text_color)
 
     def update(self):
         # Resize the box if the text is too long

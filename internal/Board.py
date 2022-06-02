@@ -97,10 +97,9 @@ class Board:
         self.position.update_legal_moves()
         self.determine_check_situation(move)
         # Look for dead position
-        if not move.is_check and not self.game.is_over():
-            if self.position.is_dead_position():
-                self.game.result = GameResult.DRAW_BY_DEAD_POSITION
-                self.game.end()
+        if not move.is_check and not self.game.is_over() and self.position.is_dead_position():
+            self.game.result = GameResult.DRAW_BY_DEAD_POSITION
+            self.game.end()
         if log:
             logging.info(move.to_string(target_piece))
         # Look for threefold repetition

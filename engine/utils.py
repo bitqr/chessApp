@@ -13,7 +13,7 @@ def get_bitboard(board_pieces, piece):
                 result.append(1)
             else:
                 if item.isnumeric():
-                    for i in range(int(item)):
+                    for _ in range(int(item)):
                         result.append(0)
                 else:
                     result.append(0)
@@ -30,7 +30,7 @@ def get_castling_rights_vector(fen_castling_rights):
 def get_en_passant_square_vector(fen_en_passant_square):
     result = []
     en_passant_binary_representation = bin(en_passant_square_to_int[fen_en_passant_square])[2:]
-    for item in range(5 - len(en_passant_binary_representation)):
+    for _ in range(5 - len(en_passant_binary_representation)):
         result.append(0)
     for digit in en_passant_binary_representation:
         result.append(1 if digit == '1' else 0)
@@ -40,7 +40,7 @@ def get_en_passant_square_vector(fen_en_passant_square):
 def get_no_progress_count(fen_no_progress_count):
     no_progress_binary_representation = bin(min(50, int(fen_no_progress_count)))[2:]
     result = []
-    for item in range(6 - len(no_progress_binary_representation)):
+    for _ in range(6 - len(no_progress_binary_representation)):
         result.append(0)
     for digit in no_progress_binary_representation:
         result.append(1 if digit == '1' else 0)
@@ -137,7 +137,6 @@ def from_move_to_output_index(move):
             (7 - origin_rank, origin_file, 7 - destination_rank, destination_file)
         ]
         return 4032 + 3 * output_index + piece_type_to_offset[move.promoted_piece_type]
-    pass
 
 
 def from_neural_network_output_to_move(game, output_vector):

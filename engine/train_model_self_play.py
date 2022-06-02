@@ -62,7 +62,7 @@ def play_against_greedy(game, engine, engine_color):
     # Update the board evaluations with the expected outcomes. Variable index is
     # to denote playing color, to determine perspective for evaluation of the position
     score = game.get_score(engine_color)
-    for index in range(len(inputs)):
+    for _ in range(len(inputs)):
         score_outputs.append(score)
     return inputs, policy_outputs, score_outputs
 
